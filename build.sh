@@ -9,14 +9,16 @@ install_deps() {
 
 free_space() {
   if [[ $INPUTS_LITTLE_SPACE == 'true' ]]; then
-    nix-store --delete --ignore-liveness ./result
-    nix-collect-garbage -d
-    nix store gc 
+    echo Deleting old paths...
+    sudo nix-store --delete --ignore-liveness ./result
+    suod nix-collect-garbage -d
+    sudo nix store gc 
   fi
 }
 
 login() {
   if ! attic cache info $INPUTS_ATTIC_CACHE; then
+    echo Configuring attic client...
     attic login local $INPUTS_ATTIC_URL $INPUTS_ATTIC_TOKEN
   fi
 }
