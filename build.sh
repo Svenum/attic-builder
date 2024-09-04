@@ -9,7 +9,7 @@ install_deps() {
 
 free_space() {
   if [[ $INPUTS_LITTLE_SPACE == 'true' ]]; then
-    nix-store --delete ./result
+    nix-store --delete --ignore-liveness ./result
     nix-collect-garbage -d
     nix store gc 
   fi
