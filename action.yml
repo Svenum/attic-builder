@@ -1,0 +1,32 @@
+name: 'Build Flake and push to attic'
+description: 'Build a Flakes nixosConfigurations and packages, then push them to the attic instance'
+author: "Svenum"
+inputs:
+  attic_url:
+    description: "URL to your attic endpoint"
+    required: true
+  attic_cache:
+    description: "Name form the cache to use"
+    required: true
+  attic_token:
+    description: "Token to authenticate on the attic server"
+    required: true
+  build_systems:
+    description: "If enabled nixoxConfigurations are build and pushed"
+    default: true
+    required: true
+  build_packages:
+    description: "If enabled packages are build and pushed"
+    default: true
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - run: ${GITHUB_ACTION_PATH}/build.sh
+      shell: bash
+      env:
+        INPUTS_BUILD_SYSTEMS: ${{ inputs.build_systems }}
+        INPUTS_BUILD_PACKAGES: ${{ inputs.build_packages }}
+        INPUTS_ATTIC_URL: ${{ inputs.attic_url }}  
+        INPUTS_ATTIC_CACHE: ${{ inputs.attic_cache }}
+        INPUTS_ATTIC_TOKEN: ${{ inputs.attic_token }}

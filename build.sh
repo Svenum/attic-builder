@@ -1,11 +1,15 @@
 #!/run/current-system/sw/bin/bash
 
 PWD=$(pwd)
-FLAKEPATH=$1
+FLAKE_PATH=$1
+
+login() {
+  attic login local $INPUTS_ATTIC_URL $INPUT_ATTIC_TOKEN
+}
 
 push() {
   echo Pushing ...
-  attic push holynix ./result
+  attic push $INPUTS_ATTIC_CACHE ./result
 }
 
 build_packages() {
@@ -68,20 +72,27 @@ build_systems() {
 }
 
 main() {
-  if [ ! -d $FLAKEPATH ]; then 
-    echo $FLAKEPATH is not a vaild path
+  if [ ! -d $FLAKE_PATH ]; then 
+    echo $FLAKE_PATH is not a vaild path
     echo Usage: $0 [Path to Directory with flake]
     exit 1
   fi
 
-  if [[ "$FLAKEPATH" != "" ]]; then
-    cd $FLAKEPATH
+  login
+
+  if [[ "$FLAKE_PATH" != "" ]]; then
+    cd $FLAKE_PATH
   fi
 
-  build_systems
-  build_packages
+  if [[ ($INPUTS_BUILD_SYSTEMS == 'true') || ($INPUTS_BUILD_SYSTEMS == '') ]]; then
+    build_systems
+  fi
+
+  if [[ $INPUTS_BUILD_PACKAGES == 'true' || ($INPUTS_BUILD_PACKAGES == '') ]]; then
+    build_packages
+  fi
   
-  if [[ "$FLAKEPATH" != "" ]]; then
+  if [[ "$FLAKE_PATH" != "" ]]; then
     cd $PWD
   fi
 }
