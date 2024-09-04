@@ -32,6 +32,8 @@ Setting up Attic is here described: //docs.attic.rs/tutorial.html
 atticadm -f /path/to/server.toml --sub 'github' --push 'CACHENAME' --validity '1y'
 ```
 
+# Known Issues
+- On large Flakes the build sometimes is failing 'cause of to little diskspace
 
 # Future Ideas
 - Creating a Docker Container that automatically fetch one or more Repos and build it periotically local
