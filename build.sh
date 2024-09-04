@@ -8,7 +8,7 @@ install_deps() {
 }
 
 login() {
-  attic login local $INPUTS_ATTIC_URL $INPUT_ATTIC_TOKEN
+  attic login local $INPUTS_ATTIC_URL $INPUTS_ATTIC_TOKEN
 }
 
 push() {
