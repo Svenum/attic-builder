@@ -31,3 +31,4 @@ runs:
         INPUTS_ATTIC_CACHE: ${{ inputs.attic_cache }}
         INPUTS_ATTIC_TOKEN: ${{ inputs.attic_token }}
         INPUTS_INSTALL_DEPS: true
+        INPUTS_LITTLE_SPACE: true

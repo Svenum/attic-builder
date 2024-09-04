@@ -7,6 +7,13 @@ install_deps() {
   nix-env -iA attic-client -f '<nixpkgs>'
 }
 
+free_space() {
+  if [[ $INPUTS_LITTLE_SPACE == 'true' ]]; then
+    rm -rf ./result
+    nix store gc 
+  fi
+}
+
 login() {
   attic login local $INPUTS_ATTIC_URL $INPUTS_ATTIC_TOKEN
 }
@@ -34,6 +41,8 @@ build_packages() {
             if [ $? -eq 0 ]; then
               echo $ARCH.$PACKAGE was build!
               push
+              # Frees up space if $INPUTS_LITTLE_SPACE is true
+              free_space
             else
               echo $ARCH.$PACKAGE build failed!
             fi
@@ -64,6 +73,8 @@ build_systems() {
       if [ $? -eq 0 ]; then
         echo $SYSTEM was build!
         push
+        # Frees up space if $INPUTS_LITTLE_SPACE is true
+        free_space
       else
         echo $SYSTEM bild failed!
       fi
