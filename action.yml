@@ -30,3 +30,4 @@ runs:
         INPUTS_ATTIC_URL: ${{ inputs.attic_url }}  
         INPUTS_ATTIC_CACHE: ${{ inputs.attic_cache }}
         INPUTS_ATTIC_TOKEN: ${{ inputs.attic_token }}
+        INPUTS_INSTALL_DEPS: true
