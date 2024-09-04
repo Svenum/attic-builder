@@ -16,7 +16,9 @@ free_space() {
 }
 
 login() {
-  attic login local $INPUTS_ATTIC_URL $INPUTS_ATTIC_TOKEN
+  if ! attic cache info $INPUTS_ATTIC_CACHE; then
+    attic login local $INPUTS_ATTIC_URL $INPUTS_ATTIC_TOKEN
+  fi
 }
 
 push() {
