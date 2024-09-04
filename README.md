@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: action/checkout@v4
+      - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v27
       - uses: Svenum/attic-builder
         with:
@@ -20,7 +20,7 @@ jobs:
           build_packages: true
           attic_url: https://attic.example.tld/
           attic_cache: CACHENAME
-          attic_token: ${{ secret.ATTIC_TOKEN }}
+          attic_token: ${{ secrets.ATTIC_TOKEN }}
 ```
 # Setup attic
 Setting up Attic is here described: //docs.attic.rs/tutorial.html

@@ -1,7 +1,11 @@
-#!/run/current-system/sw/bin/bash
+#!/usr/bin/env bash
 
 PWD=$(pwd)
 FLAKE_PATH=$1
+
+install_deps() {
+  nix-env -iA nixpkgs.attic-client
+}
 
 login() {
   attic login local $INPUTS_ATTIC_URL $INPUT_ATTIC_TOKEN
@@ -78,6 +82,7 @@ main() {
     exit 1
   fi
 
+  install_deps
   login
 
   if [[ "$FLAKE_PATH" != "" ]]; then
