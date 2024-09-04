@@ -38,7 +38,7 @@ build_packages() {
         if [[ "$PACKAGES" != "" ]]; then
           for PACKAGE in $PACKAGES; do
             echo Building $ARCH.$PACKAGE
-            nix build --accept-flake-config .\#packages.$ARCH.$PACKAGE
+            nix build --accept-flake-config .\#packages.$ARCH.$PACKAGE --max-jobs 2
             if [ $? -eq 0 ]; then
               echo $ARCH.$PACKAGE was build!
               push
@@ -70,7 +70,7 @@ build_systems() {
     # Build systems
     for SYSTEM in $SYSTEMS; do
       echo Building $SYSTEM ...
-      nix build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel
+      nix build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel --max-jobs 2
       if [ $? -eq 0 ]; then
         echo $SYSTEM was build!
         push
