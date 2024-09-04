@@ -4,7 +4,7 @@ PWD=$(pwd)
 FLAKE_PATH=$1
 
 install_deps() {
-  nix-env -i attic-client -f '<nixpkgs>'
+  nix-env -iA attic-client -f '<nixpkgs>'
 }
 
 login() {
