@@ -16,7 +16,7 @@ jobs:
       - uses: cachix/install-nix-action@v27
         with:
           nix_path: nixpkgs=channel:nixos-unstable
-      - uses: Svenum/attic-builder
+      - uses: Svenum/attic-builder@v1
         with:
           build_systems: true
           build_packages: true
