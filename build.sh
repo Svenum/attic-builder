@@ -10,9 +10,12 @@ install_deps() {
 free_space() {
   if [[ $INPUTS_LITTLE_SPACE == 'true' ]]; then
     echo Deleting old paths...
-    sudo nix-store --delete --ignore-liveness ./result
-    suod nix-collect-garbage -d
-    sudo nix store gc 
+    rm -rf \
+      ./result \
+      ~/.cache/nix
+
+    nix store gc 
+    nix store optimise
   fi
 }
 
@@ -81,7 +84,7 @@ build_systems() {
         # Frees up space if $INPUTS_LITTLE_SPACE is true
         free_space
       else
-        echo $SYSTEM bild failed!
+        echo $SYSTEM build failed!
       fi
       echo
       echo
