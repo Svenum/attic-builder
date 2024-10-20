@@ -1,8 +1,8 @@
 # attic-builder
-This Program/Script build an flake and pushes all its dependencies to attic
+This Program/Script builds a flake and pushes all its dependencies to attic
 
 # Usage
-Create `.github/workflows/build.yml` in you repo with the following contents:
+Create `.github/workflows/build.yml` in your repo with the following contents:
 
 ```yaml
 name: "Build"
@@ -25,7 +25,7 @@ jobs:
           attic_token: ${{ secrets.ATTIC_TOKEN }}
 ```
 # Setup attic
-Setting up Attic is here described: //docs.attic.rs/tutorial.html
+Setting up Attic is described here: //docs.attic.rs/tutorial.html
 
 # Generate a token
 ```bash
@@ -33,11 +33,11 @@ atticadm -f /path/to/server.toml --sub 'github' --push 'CACHENAME' --validity '1
 ```
 
 # Known Issues
-- On large Flakes the build sometimes is failing 'cause of to little diskspace
+- On large Flakes the build sometimes is failing cause of 'to little diskspace'
     - **Workaround:** Use self-hosted GitHub runner.
         - [Self-Hosted Docker Runner](https://github.com/myoung34/docker-github-actions-runner)
         - [Self-Hosted GitHub Runner Docs](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners)
 
 # Future Ideas
-- Creating a Docker Container that automatically fetch one or more Repos and build it periotically local
+- Creating a Docker Container that automatically fetches one or more Repos and builds it localy periodically
 - optionally updating flake with `nix flake update` before run.
