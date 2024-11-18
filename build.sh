@@ -77,11 +77,10 @@ build_systems() {
     # Build systems
     for SYSTEM in $SYSTEMS; do
       echo Building $SYSTEM ...
-      echo $INPUTS_ATTIC_CACHE
-      echo Show trace: $INPUTS_SHOW_TRACE
       if [[ $INPUTS_SHOW_TRACE == 'true' ]] 
       then
         echo Building with show-trace
+        ls -la
         nix build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel --max-jobs 2 --show-trace -L
       else
         nix build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel --max-jobs 2
@@ -93,6 +92,7 @@ build_systems() {
         free_space
       else
         echo $SYSTEM build failed!
+        exit 1
       fi
       echo
       echo
