@@ -25,6 +25,8 @@ inputs:
     required: true
   disable_nix_sandbox:
     description: "Sets the nix option 'sandbox' to false"
+    default: false
+    required: false
 runs:
   using: 'composite'
   steps:
@@ -39,3 +41,4 @@ runs:
         INPUTS_INSTALL_DEPS: true
         INPUTS_LITTLE_SPACE: true
         INPUTS_SHOW_TRACE: ${{ inputs.show_trace }}
+        INPUTS_DISABLE_SANDBOX: ${{ inputs.disable_nix_sandbox }}
