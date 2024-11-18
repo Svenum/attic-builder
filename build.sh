@@ -77,7 +77,7 @@ build_systems() {
     # Build systems
     for SYSTEM in $SYSTEMS; do
       echo Building $SYSTEM ...
-      ls -la /
+      rm -r /homeless-shelter
       if [[ $INPUTS_SHOW_TRACE == 'true' ]] 
       then
         echo Building with show-trace
