@@ -78,7 +78,7 @@ build_systems() {
     for SYSTEM in $SYSTEMS; do
       echo Building $SYSTEM ...
       echo $INPUTS_SHOW_TRACE
-      if [[ "$INPUTS_SHOW_TRACE" == true ]] 
+      if [[ $INPUTS_SHOW_TRACE == true ]] 
       then
         echo Building with show-trace
         nix build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel --max-jobs 2 --show-trace -L
