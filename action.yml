@@ -22,7 +22,7 @@ inputs:
   show_trace:
     description: "Show the Build Trace"
     default: false
-    required: false
+    required: true
 runs:
   using: 'composite'
   steps:
@@ -36,3 +36,4 @@ runs:
         INPUTS_ATTIC_TOKEN: ${{ inputs.attic_token }}
         INPUTS_INSTALL_DEPS: true
         INPUTS_LITTLE_SPACE: true
+        INPUTS_SHOW_TRACE: ${{ inputs.show_trace }}
