@@ -23,6 +23,8 @@ inputs:
     description: "Show the Build Trace"
     default: false
     required: true
+  disable_nix_sandbox:
+    description: "Sets the nix option 'sandbox' to false"
 runs:
   using: 'composite'
   steps:

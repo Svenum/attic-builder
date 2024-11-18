@@ -80,8 +80,7 @@ build_systems() {
       if [[ $INPUTS_SHOW_TRACE == 'true' ]] 
       then
         echo Building with show-trace
-        ls -la
-        nix build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel --max-jobs 2 --show-trace -L
+        nix --option sandbox false build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel --max-jobs 2 --show-trace -L
       else
         nix build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel --max-jobs 2
       fi
