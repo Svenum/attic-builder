@@ -4,7 +4,7 @@ PWD=$(pwd)
 FLAKE_PATH=$1
 
 install_deps() {
-  nix-env -iA attic-client -f '<nixpkgs>'
+  nix-env -iA attic-client -f '<nixpkgs>' || exit 1
 }
 
 free_space() {
@@ -12,17 +12,18 @@ free_space() {
     echo Deleting old paths...
     rm -rf \
       ./result \
-      ~/.cache/nix
-
+      ~/.cache/nix \
+      /homeless-shelter
+    
     nix store gc 
     nix store optimise
   fi
 }
 
 login() {
-  if ! attic cache info $INPUTS_ATTIC_CACHE; then
+  if ! attic cache info $INPUTS_ATTIC_CACHE >> /dev/null ; then
     echo Configuring attic client...
-    attic login local $INPUTS_ATTIC_URL $INPUTS_ATTIC_TOKEN
+    attic login local $INPUTS_ATTIC_URL $INPUTS_ATTIC_TOKEN || exit 1
   fi
 }
 
@@ -53,6 +54,7 @@ build_packages() {
               free_space
             else
               echo $ARCH.$PACKAGE build failed!
+              exit 1
             fi
               echo
               echo
@@ -77,14 +79,7 @@ build_systems() {
     # Build systems
     for SYSTEM in $SYSTEMS; do
       echo Building $SYSTEM ...
-      rm -r /homeless-shelter
-      if [[ $INPUTS_SHOW_TRACE == 'true' ]] 
-      then
-        echo Building with show-trace
-        nix build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel --max-jobs 2 --show-trace -L
-      else
-        nix build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel --max-jobs 2
-      fi
+      nix build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel --max-jobs 2
       if [ $? -eq 0 ]; then
         echo $SYSTEM was build!
         push
