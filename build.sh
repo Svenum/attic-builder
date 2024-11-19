@@ -4,7 +4,7 @@ PWD=$(pwd)
 FLAKE_PATH=$1
 
 install_deps() {
-  nix-env -iA attic-client -f '<nixpkgs>'
+  nix-env -iA attic-client -f '<nixpkgs>' || exit 1
 }
 
 free_space() {
@@ -12,17 +12,18 @@ free_space() {
     echo Deleting old paths...
     rm -rf \
       ./result \
-      ~/.cache/nix
-
+      ~/.cache/nix \
+      /homeless-shelter
+    
     nix store gc 
     nix store optimise
   fi
 }
 
 login() {
-  if ! attic cache info $INPUTS_ATTIC_CACHE; then
+  if ! attic cache info $INPUTS_ATTIC_CACHE >> /dev/null ; then
     echo Configuring attic client...
-    attic login local $INPUTS_ATTIC_URL $INPUTS_ATTIC_TOKEN
+    attic login local $INPUTS_ATTIC_URL $INPUTS_ATTIC_TOKEN || exit 1
   fi
 }
 
@@ -53,6 +54,7 @@ build_packages() {
               free_space
             else
               echo $ARCH.$PACKAGE build failed!
+              exit 1
             fi
               echo
               echo
@@ -85,6 +87,7 @@ build_systems() {
         free_space
       else
         echo $SYSTEM build failed!
+        exit 1
       fi
       echo
       echo
@@ -124,3 +127,4 @@ main() {
 }
 
 main
+
