@@ -78,19 +78,24 @@ build_systems() {
   if [[ "$SYSTEMS" != "" ]]; then
     # Build systems
     for SYSTEM in $SYSTEMS; do
-      echo Building $SYSTEM ...
-      nix build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel --max-jobs 2
-      if [ $? -eq 0 ]; then
-        echo $SYSTEM was build!
-        push
-        # Frees up space if $INPUTS_LITTLE_SPACE is true
-        free_space
+      SYSTEM_ARCH=$(nix repl <<< ":lf ." <<< ":p nixosConfigurations.$SYSTEM.pkgs.system" 2> /dev/null)
+      if [[ "$SYSTEM_ARCH" =~ $SUPPORTED_ARCHS_REGEX ]]; then
+        echo Building $SYSTEM ...
+        nix build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel --max-jobs 2
+        if [ $? -eq 0 ]; then
+          echo $SYSTEM was build!
+          push
+          # Frees up space if $INPUTS_LITTLE_SPACE is true
+          free_space
+        else
+          echo $SYSTEM build failed!
+          exit 1
+        fi
+        echo
+        echo
       else
-        echo $SYSTEM build failed!
-        exit 1
+        echo $SYSTEM_ARCH is not supported on your system!
       fi
-      echo
-      echo
     done
   else
     echo No systems in flake found!
