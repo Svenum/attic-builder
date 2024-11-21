@@ -41,3 +41,4 @@ atticadm -f /path/to/server.toml --sub 'github' --push 'CACHENAME' --validity '1
 # Future Ideas
 - Creating a Docker Container that automatically fetch one or more Repos and build it periotically local
 - optionally updating flake with `nix flake update` before run.
+- Rewrite in pyhton
