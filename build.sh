@@ -46,7 +46,11 @@ build_packages() {
         if [[ "$PACKAGES" != "" ]]; then
           for PACKAGE in $PACKAGES; do
             echo Building $ARCH.$PACKAGE
-            nix build --accept-flake-config .\#packages.$ARCH.$PACKAGE --max-jobs 2
+            if [[ ($INPUTS_DONT_FAIL == 'true') || ($INPUTS_DONT_FAIL == '') ]]; then
+              nix build --accept-flake-config .\#packages.$ARCH.$PACKAGE --max-jobs 2 --keep-going
+            else
+              nix build --accept-flake-config .\#packages.$ARCH.$PACKAGE --max-jobs 2
+            fi
             if [ $? -eq 0 ]; then
               echo $ARCH.$PACKAGE was build!
               push
@@ -81,7 +85,11 @@ build_systems() {
       SYSTEM_ARCH=$(nix repl <<< ":lf ." <<< ":p nixosConfigurations.$SYSTEM.pkgs.system" 2> /dev/null)
       if [[ "$SYSTEM_ARCH" =~ $SUPPORTED_ARCHS_REGEX ]]; then
         echo Building $SYSTEM ...
-        nix build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel --max-jobs 2
+        if [[ ($INPUTS_DONT_FAIL == 'true') || ($INPUTS_DONT_FAIL == '') ]]; then
+          nix build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel --max-jobs 2 --keep-going
+        else
+          nix build --accept-flake-config .\#nixosConfigurations.$SYSTEM.config.system.build.toplevel --max-jobs 2
+        fi
         if [ $? -eq 0 ]; then
           echo $SYSTEM was build!
           push
