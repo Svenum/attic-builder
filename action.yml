@@ -23,6 +23,10 @@ inputs:
     description: "If enabled, packages that fail in their build will not"
     default: false
     required: false
+  little_space:
+    description: "If enabled, all build get deleted bevor the next starts, this saves diskspace"
+    default: true
+    required: false
 runs:
   using: 'composite'
   steps:
@@ -35,5 +39,5 @@ runs:
         INPUTS_ATTIC_CACHE: ${{ inputs.attic_cache }}
         INPUTS_ATTIC_TOKEN: ${{ inputs.attic_token }}
         INPUTS_INSTALL_DEPS: true
-        INPUTS_LITTLE_SPACE: true
+        INPUTS_LITTLE_SPACE: ${{ inputs.little_space }}
         INPUTS_DONT_FAIL: ${{ inputs.dont_fail }}
