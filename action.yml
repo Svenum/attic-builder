@@ -27,6 +27,10 @@ inputs:
     description: "If enabled, all build get deleted bevor the next starts, this saves diskspace"
     default: true
     required: false
+  no_keep_attic_conf:
+    description: "Deletes the Attic conf before running the main script (usefull for persistent runners)"
+    default: false
+    required: false
 runs:
   using: 'composite'
   steps:
@@ -41,3 +45,4 @@ runs:
         INPUTS_INSTALL_DEPS: true
         INPUTS_LITTLE_SPACE: ${{ inputs.little_space }}
         INPUTS_DONT_FAIL: ${{ inputs.dont_fail }}
+        INPUTS_NO_KEEP_ATTIC_CONF: ${{ inputs.no_keep_attic_conf}}

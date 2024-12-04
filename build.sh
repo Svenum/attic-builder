@@ -116,7 +116,9 @@ main() {
     echo Usage: $0 [Path to Directory with flake]
     exit 1
   fi
-
+  if [[ $INPUTS_NO_KEEP_ATTIC_CONF == true]]; then
+    rm -rf ~/.config/attic
+  fi
   if [[ $INPUTS_INSTALL_DEPS == true ]]; then
     install_deps
   fi
