@@ -1,6 +1,14 @@
 # attic-builder
 This Program/Script builds a flake and pushes all its dependencies to attic
-
+# Development
+To get up and running with development, you can use the following commands:
+```bash
+nix-shell . #This will install all the necessary dependencies for you
+bun install #This will install the bun dependencies for you
+bun run build #This will run the script for you which does the building and pushing to attic. BEFORE you run this, fill in your .env file with the envs in the .env.example file
+```
+# Env-Vars
+TODO: Add infos about env-vars
 # Usage
 Create `.github/workflows/build.yml` in your repo with the following contents:
 
@@ -24,6 +32,7 @@ jobs:
           attic_cache: CACHENAME
           attic_token: ${{ secrets.ATTIC_TOKEN }}
 ```
+
 # Setup attic
 Setting up Attic is described here: //docs.attic.rs/tutorial.html
 

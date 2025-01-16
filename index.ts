@@ -22,7 +22,7 @@ else if(process.env.FLAKE_PATH
 
 //remove the attic conf if it should not be kept
 if(process.env.NO_KEEP_ATTIC_CONF || process.env.NO_KEEP_ATTIC_CONF == 'true'){
-    log.log("DEBUG", "NO_KEEP_ATTIC_CONF is set, will try remove config dir")
+    log.log("DEBUG", "NO_KEEP_ATTIC_CONF is set, will try to remove config dir")
     await $`rm -rf ~/.config/attic`
 }
 
@@ -39,9 +39,21 @@ if(process.env.INSTALL_DEPS && process.env.INSTALL_DEPS != "false"){
     log.log("WARN", `You have chosen **not** to install deps or you have forgotten to set the env var, if you see any problems with this, try rerunning with the $INSTALL_DEPS env var set to true`)
 }
 
+//validate the attic conf and configure attic for our use cases
+log.log("INFO", "Configuring Attic")
+if(!process.env.ATTIC_CACHE_URL || !process.env.ATTIC_CACHE_TOKEN || !process.env.ATTIC_CACHE_NAME){
+    log.log("ERROR", "attic cache env vars aren't set, this is required for attic to work. Please set the env variables ATTIC_CACHE_NAME ATTIC_CACHE_URL ATTIC_CACHE_TOKEN to your attic cache.")
+    process.exit(1)
+}
+await $`
+    attic login local ${process.env.ATTIC_CACHE_URL} ${process.env.ATTIC_CACHE_TOKEN}
+`.catch((err)=>{
+    log.log("ERROR", `Failed to login to attic: ${err}`)
+    process.exit(1)
+})
 //change directory to the flake dir
 await $`cd ${flake_path}`.catch((err)=>{
-    log.log("ERROR", `Cannot cd to flake path: ${flake_path}, this is unexpected. The Programm cannot continue`)
+    log.log("ERROR", `Cannot cd to flake path: ${flake_path}, this is unexpected. The Program cannot continue. (Error was: ${err})`)
     process.exit(1)
 })
 //fetch the systems
