@@ -50,11 +50,12 @@ const systems = await $`
     cd ${flake_path} 
     nix flake show --json
     `.json().then((systems:nixOSFlake)=>{
+        log.log("DEBUG", `Fetched Systems: ${JSON.stringify(systems.nixosConfigurations)}`)
         return systems.nixosConfigurations
     })
     .catch((err)=>{
-        log.log("ERROR", `Error whilst fetching system configurations ${err}`)
-        if(process.env.BUILD_SYSTEMS && process.env.BUILD_SYSTEMS == "true"){
+        log.log("ERROR", `Error whilst fetching system configurations: ${err}`)
+        if(process.env.BUILD_SYSTEMS && process.env.BUILD_SYSTEMS == "false"){
             log.log("WARN", "Ignored previous error due to user not requesting to build systems (set $BUILD_PACKAGES to true if you wish to build systems)")
         }
         else{

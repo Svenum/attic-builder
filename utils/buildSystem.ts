@@ -4,22 +4,19 @@ export default async function buildSystem(name:string, flake_dir:string, parentL
     return new Promise(async (resolve, reject)=>{
         parentLogger.log('INFO', `Building System: ${name} with flake_dir: ${flake_dir}`)
         parentLogger.log("DEBUG", `Getting System Arch`)
-        const subProcess =spawn(["nix", "repl"], {
+        const buffer = Buffer.alloc(100);
+        await $`
+            cd ${flake_dir}
+            sh ../utils/repl.sh ${name} > ${buffer}`
+        console.log(buffer.toString().replaceAll('\n', ''))
+        /*
+        const childProc = spawn(["bash", "../utils/repl.sh"], {
             cwd: flake_dir,
             stdin: "pipe",
-            stdout: "pipe",
+            stdout: "inherit",
+            env: {...process.env, "SYSTEM": name}
         })
-        if(subProcess){
-            parentLogger.log("DEBUG", `Subprocess started`)
-            subProcess.stdin.write(`:lf .`)
-            const text = await new Response(subProcess.stdout).text();
-
-            subProcess.stdin.flush()
-            console.log(text)
-            subProcess.stdin.write(`:p nixosConfigurations.${name}.pkgs.system`)
-
-        }
-
+        */
         resolve()
     })
 }
