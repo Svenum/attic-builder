@@ -52,7 +52,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - run: bun run ${GITHUB_ACTION_PATH}
+    - run: nix-shell ${GITHUB_ACTION_PATH} --run "bun run ${GITHUB_ACTION_PATH}"
       shell: bash
       env:
         BUILD_SYSTEMS: ${{ inputs.build_systems }}
