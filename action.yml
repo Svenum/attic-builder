@@ -49,7 +49,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - run: ${GITHUB_ACTION_PATH}/build.sh
+    - run: bun run ${GITHUB_ACTION_PATH}
       shell: bash
       env:
         BUILD_SYSTEMS: ${{ inputs.build_systems }}
