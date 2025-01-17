@@ -32,5 +32,10 @@ export type nixOSFlake = {
         [key:string]:any //TODO: Make this more specific
     }
 }
+export type nixOSPackage = {
+    description: string,
+    name: string,
+    type: string
+}
 
 export type nixOSArchitecture = "x86_64-linux" | "aarch64-darwin" | "aarch64-linux" | "unknown"

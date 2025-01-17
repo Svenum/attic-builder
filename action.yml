@@ -31,18 +31,37 @@ inputs:
     description: "Deletes the Attic conf before running the main script (usefull for persistent runners)"
     default: false
     required: false
+  flake_path:
+    description: "If your flake path is something other than the default, you can set it with this var"
+    default: "."
+    required: false
+  only_build_sytems:
+    description: "If you want to only build specific systems, you can set them here (comma seperated string of hostnames)"
+    required: false
+  log_level:
+    description: "Set the Log Level for the script (can be DEBUG, INFO, WARNING, ERROR)"
+    required: false
+    default: "INFO"
+  json_logging:
+    description: "If enabled, the log will be in json format"
+    required: false
+    default: "false"
 runs:
   using: 'composite'
   steps:
     - run: ${GITHUB_ACTION_PATH}/build.sh
       shell: bash
       env:
-        INPUTS_BUILD_SYSTEMS: ${{ inputs.build_systems }}
-        INPUTS_BUILD_PACKAGES: ${{ inputs.build_packages }}
-        INPUTS_ATTIC_URL: ${{ inputs.attic_url }}  
-        INPUTS_ATTIC_CACHE: ${{ inputs.attic_cache }}
-        INPUTS_ATTIC_TOKEN: ${{ inputs.attic_token }}
-        INPUTS_INSTALL_DEPS: true
-        INPUTS_LITTLE_SPACE: ${{ inputs.little_space }}
-        INPUTS_DONT_FAIL: ${{ inputs.dont_fail }}
-        INPUTS_NO_KEEP_ATTIC_CONF: ${{ inputs.no_keep_attic_conf}}
+        BUILD_SYSTEMS: ${{ inputs.build_systems }}
+        BUILD_PACKAGES: ${{ inputs.build_packages }}
+        ATTIC_CACHE_URL: ${{ inputs.attic_url }}
+        ATTIC_CACHE_NAME: ${{ inputs.attic_cache }}
+        ATTIC_CACHE_TOKEN: ${{ inputs.attic_token }}
+        FLAKE_PATH: ${{ github.flake_apth }}
+        INSTALL_DEPS: true
+        LITTLE_SPACE: ${{ inputs.little_space }}
+        DONT_FAIL: ${{ inputs.dont_fail }}
+        NO_KEEP_ATTIC_CONF: ${{ inputs.no_keep_attic_conf}}
+        ONLY_BUILD_SYSTEMS: ${{ inputs.build_systems }}
+        LOG_LEVEL: ${{ inputs.log_level }}
+        JSON_LOGGING: ${{ inputs.json_logging }}
