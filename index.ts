@@ -28,19 +28,6 @@ if(process.env.NO_KEEP_ATTIC_CONF || process.env.NO_KEEP_ATTIC_CONF == 'true'){
     await $`rm -rf ~/.config/attic`
 }
 
-//check if deps should be installed and then install them if configured
-if(process.env.INSTALL_DEPS && process.env.INSTALL_DEPS != "false"){
-    //install deps
-    log.log("INFO", "Installing Dependencies")
-    $`nix-env -iA attic-client jq -f '<nixpkgs>' || exit 1`.catch((err)=>{
-        log.log("ERROR", `Failed to install attic-client dependency: ${err}`)
-    }).finally(()=>{
-        log.log("DEBUG", "Done with installing deps")
-    })
-} else{
-    log.log("WARN", `You have chosen **not** to install deps or you have forgotten to set the env var, if you see any problems with this, try rerunning with the $INSTALL_DEPS env var set to true`)
-}
-
 //validate the attic conf and configure attic for our use cases
 log.log("INFO", "Configuring Attic")
 if(!process.env.ATTIC_CACHE_URL || !process.env.ATTIC_CACHE_TOKEN || !process.env.ATTIC_CACHE_NAME){
@@ -86,7 +73,15 @@ if(process.env.ONLY_BUILD_SYSTEMS && (!process.env.BUILD_SYSTEMS || process.env.
 }
 if(process.env.ONLY_BUILD_SYSTEMS){
     //set the new systems array
-    systemNames = process.env.ONLY_BUILD_SYSTEMS.split(',')
+    let newSystems = []
+    for(let requestedSystemName of process.env.ONLY_BUILD_SYSTEMS.split(',')){
+        if(!systemNames.includes(requestedSystemName)){
+            log.log("WARN", `The requested system: ${requestedSystemName} is not in the list of available systems: ${systemNames}, will ignore this system`)
+            continue
+        }
+        newSystems.push(requestedSystemName)
+    }
+    systemNames = newSystems
 }
 
 

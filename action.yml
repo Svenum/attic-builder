@@ -65,7 +65,7 @@ runs:
         LITTLE_SPACE: ${{ inputs.little_space }}
         DONT_FAIL: ${{ inputs.dont_fail }}
         NO_KEEP_ATTIC_CONF: ${{ inputs.no_keep_attic_conf}}
-        ONLY_BUILD_SYSTEMS: ${{ inputs.build_systems }}
+        ONLY_BUILD_SYSTEMS: ${{ inputs.only_build_sytems }}
         MAX_JOBS: ${{ inputs.max_jobs }}
         LOG_LEVEL: ${{ inputs.log_level }}
         JSON_LOGGING: ${{ inputs.json_logging }}
