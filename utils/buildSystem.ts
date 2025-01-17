@@ -20,6 +20,7 @@ export default async function buildSystem(name:string, flake_dir:string, parentL
         await $`
             cd ${flake_dir}
             pwd
+            ls -la ${dir}/utils
             sh ${dir}/utils/repl.sh ${name} > ${buffer}`.catch((err)=>{
             parentLogger.log("ERROR", `Failed to get system arch: ${err}`)
         })
