@@ -78,6 +78,7 @@ const {systems} = await $`
         }
     })
 let systemNames = Object.keys(systems)
+console.log(systemNames, process.env.ONLY_BUILD_SYSTEMS)
 //check if we should build only specific systems
 if(process.env.ONLY_BUILD_SYSTEMS && (!process.env.BUILD_SYSTEMS || process.env.BUILD_SYSTEMS == 'false')){
     //log an error, because this is a contradiction and most likely a mistake
