@@ -19,8 +19,6 @@ export default async function buildSystem(name:string, flake_dir:string, parentL
         //get the system arch of the system we're supposed to be building
         await $`
             cd ${flake_dir}
-            pwd
-            ls -la ${dir}/utils
             bash ${dir}/utils/repl.sh ${name} > ${buffer}`.catch((err)=>{
             parentLogger.log("ERROR", `Failed to get system arch: ${err.stderr.toString()}`)
         })

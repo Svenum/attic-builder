@@ -24,9 +24,6 @@ jobs:
       - uses: cachix/install-nix-action@v27
         with:
           nix_path: nixpkgs=channel:nixos-unstable
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
       - uses: Svenum/attic-builder@v1
         with:
           build_systems: true
