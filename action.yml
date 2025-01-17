@@ -38,6 +38,9 @@ inputs:
   only_build_sytems:
     description: "If you want to only build specific systems, you can set them here (comma seperated string of hostnames)"
     required: false
+  max_jobs:
+    description: "Set the maximum number of jobs to run at the same time"
+    required: false
   log_level:
     description: "Set the Log Level for the script (can be DEBUG, INFO, WARNING, ERROR)"
     required: false
@@ -63,5 +66,6 @@ runs:
         DONT_FAIL: ${{ inputs.dont_fail }}
         NO_KEEP_ATTIC_CONF: ${{ inputs.no_keep_attic_conf}}
         ONLY_BUILD_SYSTEMS: ${{ inputs.build_systems }}
+        MAX_JOBS: ${{ inputs.max_jobs }}
         LOG_LEVEL: ${{ inputs.log_level }}
         JSON_LOGGING: ${{ inputs.json_logging }}
