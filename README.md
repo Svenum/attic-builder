@@ -1,5 +1,5 @@
 # attic-builder
-This Program/Script builds a flake and pushes all its dependencies to attic
+This Project aims to provide a Github Action and Docker container which automatically builds and pushes nix configurations and packages to an attic instance.
 # Development
 To get up and running with development, you can use the following commands:
 ```bash

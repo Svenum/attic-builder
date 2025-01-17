@@ -15,9 +15,11 @@ export default async function buildSystem(name:string, flake_dir:string, parentL
         const buffer = Buffer.alloc(100);
         //get the directory of the root of the project (we are currently in the nixconfig directory)
         const dir = path.join(__dirname, "..")
+        parentLogger.log("DEBUG", `Dir: ${dir}`)
         //get the system arch of the system we're supposed to be building
         await $`
             cd ${flake_dir}
+            pwd
             sh ${dir}/utils/repl.sh ${name} > ${buffer}`.catch((err)=>{
             parentLogger.log("ERROR", `Failed to get system arch: ${err}`)
         })
