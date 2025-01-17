@@ -34,6 +34,11 @@ jobs:
           attic_url: https://attic.example.tld/
           attic_cache: CACHENAME
           attic_token: ${{ secrets.ATTIC_TOKEN }}
+          no_keep_attic_conf: false # Optional, set to true to not keep the attic config (usefull if you've changed something in your conf and the config is still in the cache)
+          dont_fail: false #Optional, set to true to not fail the build if a system fails one or two packages (appends the --keep_going flag to nix-build)
+          max_jobs: 2 #Optional, set to the amount of jobs you want to run in parallel (appends the --max_jobs flag to nix-build)
+          only_build_systems: <hostname1>,<hostname2> #Optional, set to only build the specified systems
+          
 ```
 
 # Setup attic
