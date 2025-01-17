@@ -88,7 +88,9 @@ if(process.env.BUILD_SYSTEMS && process.env.BUILD_SYSTEMS == 'true' && systems){
     log.log("DEBUG", `Systems to build: ${systemNames}`)
     for (let system of systemNames) {
         log.log('DEBUG', `Building ${system}`)
-        await buildSystem(system, flake_path, log)
+        await buildSystem(system, flake_path, log).catch((err)=>{
+            log.log("ERROR", `Failed to build system: ${system}, error: ${err}. This doesn't indicate a catastrophic failure, so will continue the building of other systems`)
+        })
         log.log("INFO", `Done with system: ${system}`)
     }
 }
