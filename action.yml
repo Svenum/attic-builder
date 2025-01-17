@@ -35,7 +35,7 @@ inputs:
     description: "If your flake path is something other than the default, you can set it with this var"
     default: "."
     required: false
-  only_build_sytems:
+  only_build_systems:
     description: "If you want to only build specific systems, you can set them here (comma seperated string of hostnames)"
     required: false
   max_jobs:
@@ -65,7 +65,7 @@ runs:
         LITTLE_SPACE: ${{ inputs.little_space }}
         DONT_FAIL: ${{ inputs.dont_fail }}
         NO_KEEP_ATTIC_CONF: ${{ inputs.no_keep_attic_conf}}
-        ONLY_BUILD_SYSTEMS: ${{ inputs.only_build_sytems }}
+        ONLY_BUILD_SYSTEMS: ${{ inputs.only_build_systems }}
         MAX_JOBS: ${{ inputs.max_jobs }}
         LOG_LEVEL: ${{ inputs.log_level }}
         JSON_LOGGING: ${{ inputs.json_logging }}
