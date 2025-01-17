@@ -2,6 +2,7 @@ import type {Logger} from "./logger.ts";
 import {$} from "bun"
 import * as os from "node:os";
 import type {nixOSArchitecture} from "./types";
+import * as path from "node:path";
 export default async function buildSystem(name:string, flake_dir:string, parentLogger:Logger):Promise<void>{
 
     //we want this function to be blocking, as we want to wait for the system to be built
@@ -12,11 +13,12 @@ export default async function buildSystem(name:string, flake_dir:string, parentL
 
         //buffer for stdout of the repl.sh script
         const buffer = Buffer.alloc(100);
-
+        //get the directory of the root of the project (we are currently in the nixconfig directory)
+        const dir = path.join(__dirname, "..")
         //get the system arch of the system we're supposed to be building
         await $`
             cd ${flake_dir}
-            sh ../utils/repl.sh ${name} > ${buffer}`.catch((err)=>{
+            sh ${dir}/utils/repl.sh ${name} > ${buffer}`.catch((err)=>{
             parentLogger.log("ERROR", `Failed to get system arch: ${err}`)
         })
         const system:nixOSArchitecture = buffer.toString().replaceAll('\n', '').replaceAll(" ", '') as nixOSArchitecture
