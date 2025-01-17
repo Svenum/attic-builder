@@ -21,9 +21,10 @@ export default async function buildSystem(name:string, flake_dir:string, parentL
             cd ${flake_dir}
             pwd
             ls -la ${dir}/utils
-            sh ${dir}/utils/repl.sh ${name} > ${buffer}`.catch((err)=>{
+            bash ${dir}/utils/repl.sh ${name} > ${buffer}`.catch((err)=>{
             parentLogger.log("ERROR", `Failed to get system arch: ${err}`)
         })
+        console.log(buffer.toString())
         const system:nixOSArchitecture = buffer.toString().replaceAll('\n', '').replaceAll(" ", '') as nixOSArchitecture
         parentLogger.log("DEBUG", `Nixos System Arch: ${system}`)
         parentLogger.log("DEBUG", `Running on: ${os.arch()} ${os.platform()}`)
