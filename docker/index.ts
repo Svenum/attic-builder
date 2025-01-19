@@ -81,13 +81,12 @@ await $`
 
 log.log("INFO", `Checking for changes in the repository: ${repo} on branch: ${branch} for user: ${user}`)
 log.log("DEBUG", `Also updating the repository upload url to avoid authentication issues`)
-//Switch to the correct branch and pull the changes to the current version
+//Switch to the correct branch
 await $`
     cd ${gitPath}
     git checkout ${branch}
     #Update the push url to avoid authentication issues
     git remote set-url --push origin https://${user}:${token}@github.com/${user}/${repo}
-    git pull
 `.quiet().catch((err)=>{
     log.log("ERROR", `Failed to switch to branch: ${branch}, please check the branch and the repository: ${repo}`);
     log.log("DEBUG", `Error was: ${err.stderr.toString()}`)
