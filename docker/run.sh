@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-nix-shell . --run "bun run ."
+nix-shell . --run "bun run debug-docker"

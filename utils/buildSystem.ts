@@ -74,9 +74,9 @@ export default async function buildSystem(name:string, flake_dir:string, parentL
             cd ${flake_dir}
             attic push ${process.env.ATTIC_CACHE_NAME} ./result
         `.catch((err)=>{
-            parentLogger.log("ERROR", `Failed to push to attic: ${err}`)
+            parentLogger.log("ERROR", `Failed to push to attic: ${err.stderr.toString()}`)
         })
-        .finally(()=>{
+        .then(()=>{
             parentLogger.log("INFO", `Pushed to attic`)
         })
         //cleanup phase (if we are supposed too)
@@ -86,10 +86,10 @@ export default async function buildSystem(name:string, flake_dir:string, parentL
                 rm -rf ./result 
                 rm -rf ~/.cache/nix 
                 rm -rf /homeless-shelter
-                  nix store gc 
-                  nix store optimise
+                nix store gc 
+                nix store optimise
             `.catch((err)=>{
-                parentLogger.log("ERROR", `Failed to cleanup: ${err}`)
+                parentLogger.log("ERROR", `Failed to cleanup: ${err.stderr.toString()}`)
             })
             .finally(()=>{
                 parentLogger.log("INFO", `Cleaned up old paths`)

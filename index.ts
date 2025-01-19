@@ -102,6 +102,8 @@ const packages:{[key:string]:{[key:string]:nixOSPackage}} = await $`
     nix flake show --json 2> /dev/null | jq -r '.packages'
 `.json().then((packages:{[key:string]:{[key:string]:nixOSPackage}})=>{
     return packages
+}).catch((err)=>{
+    log.log("ERROR", `Failed to fetch packages: ${err.stderr.toString()}`)
 })
 
 //if the BUILD_PACKAGES var is set to true, then we need to build each package

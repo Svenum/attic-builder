@@ -8,7 +8,13 @@
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
+  "scripts": {
+    "debug-docker": "bun run docker/index.ts",
+    "build": "bun run ."
+  },
   "dependencies": {
+    "@octokit/rest": "^21.1.0",
+    "@octokit/webhooks": "^13.4.2",
     "chalk": "^5.4.1",
     "dotenv": "^16.4.7",
     "eslint": "^9.18.0",
