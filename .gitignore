@@ -181,3 +181,4 @@ dist
 .DS_Store
 
 holynix
+docker-compose.example.yml

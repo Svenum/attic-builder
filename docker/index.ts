@@ -44,8 +44,10 @@ if(!process.env.GITHUB_USER){
 const repo = process.env.GITHUB_REPO;
 const branch = process.env.GITHUB_BRANCH ? process.env.GITHUB_BRANCH : "main";
 const user = process.env.GITHUB_USER;
-const gitPath = process.env.FLAKE_PATH ? process.env.FLAKE_PATH : "/builder";
+const gitPath = process.env.FLAKE_PATH ? process.env.FLAKE_PATH : "/builder/nixos-config";
 const token = process.env.GITHUB_TOKEN;
+const minimumIntervalBetweenBuilds = process.env.MINIMUM_INTERVAL_BETWEEN_BUILDS ? process.env.MINIMUM_INTERVAL_BETWEEN_BUILDS : "2d";
+
 //if the GIT_INIT is set to true and GIT_PATH is set, we will pull the repository
 if(process.env.GIT_INIT == "true"){
     //Check if the git path exists
@@ -54,6 +56,7 @@ if(process.env.GIT_INIT == "true"){
         log.log("ERROR", `GIT_PATH exists, please check the path: ${gitPath} or set the GIT_INIT var to false`);
         process.exit(1)
     }
+    log.log("INFO", `Cloning the repository: ${repo} on branch: ${branch} for user: ${user}`)
     await $`
         git clone https://${user}:${token}@github.com/${user}/${repo}.git ${gitPath}
     `.catch((err)=>{
@@ -62,6 +65,37 @@ if(process.env.GIT_INIT == "true"){
         process.exit(1)
     })
 }
+
+//check the minimum interval between builds
+let intervals:Array<{key:string, multiplier:number}> = [
+    {
+        key: "ms",
+        multiplier: 1
+    },
+    {
+        key: "s",
+        multiplier: 1000
+    },
+    {
+        key: "m",
+        multiplier: 60000
+    },
+    {
+        key: "h",
+        multiplier: 3600000
+    },
+    {
+        key: "d",
+        multiplier: 86400000
+    }
+]
+let interval = intervals[minimumIntervalBetweenBuilds.length - 1]
+if(!interval){
+    log.log("ERROR", `Failed to parse the minimum interval between builds, please check the format: ${minimumIntervalBetweenBuilds} (allowed values: ms, s, m, h, d)`);
+    process.exit(1)
+}
+let intervalValue = parseInt(minimumIntervalBetweenBuilds.slice(0, -1)) * interval.multiplier
+log.log("DEBUG", `Minimum interval between builds is: ${intervalValue} milliseconds`)
 
 //check if the git path exists
 await $`
@@ -76,6 +110,7 @@ await $`
     git rev-parse --is-inside-work-tree
 `.quiet().catch((err)=>{
     log.log("ERROR", `GIT_PATH is not a git repository, please check the path: ${gitPath}. If you want me to clone the repository, please set the GIT_PATH to your desired path and the GIT_INIT to true`);
+    log.log("DEBUG", `Error was: ${err.stderr.toString()}, ${err.stdout.toString()}, path is: ${path.join(__dirname, gitPath)}`)
     process.exit(1)
 })
 
@@ -133,6 +168,15 @@ if(!scopes.includes("repo")){
     log.log("ERROR", `The token does not have the required permissions to access the repository, please re-run with a token with the repo scope`);
     process.exit(1)
 }
+
+//set the timestamp of the next build that needs to be done
+let nextBuild = Date.now() + intervalValue;
+log.log("INFO", `Will build the next configuration at minimum: ${new Date(nextBuild).toISOString()}`)
+log.log("INFO", `Listening for changes in the repository: ${repo} on branch: ${branch} for user: ${user}`)
+let currentRun = 0;
+if(process.env.BUILD_ON_STARTUP && process.env.BUILD_ON_STARTUP == "true"){
+    log.log("WARN", "Will build the configuration on the first loop (so after the frequency you've set)")
+}
 //Main Loop
 setInterval(async ()=>{
     log.log("INFO", "Checking for changes in the repository")
@@ -151,11 +195,17 @@ setInterval(async ()=>{
     .then((res)=>{
         return res.data
     })
+    if(!commits){
+        log.log("ERROR", `Failed to fetch the latest commit hash, please check the repository: ${repo} and your credentials`);
+        return
+    }
     let latestCommit = commits.sha;
     log.log("DEBUG", `Latest commit hash is: ${latestCommit}`)
     log.log("DEBUG", `Latest commit message I stored: ${currentCommit}`)
     //Check if the latest commit is different from the current commit
-    if(!currentCommit.includes(latestCommit)){
+    if(!currentCommit.includes(latestCommit) || (currentRun == 0 && process.env.BUILD_ON_STARTUP && process.env.BUILD_ON_STARTUP == "true") || (Date.now() > nextBuild)){
+        currentRun = 1;
+        nextBuild = Date.now() + intervalValue;
         log.log("INFO", "New changes in Upstream, pulling and rebuilding the config")
         //set the current commit to the latest commit
         currentCommit = latestCommit;
@@ -177,8 +227,10 @@ setInterval(async ()=>{
             process.exit(1)
         })
         log.log("INFO", "Configuration rebuilt and pushed to attic. Please bear in mind that there could've been still some errors. To be sure please check the logs")
+
     }
     else{
         log.log("DEBUG", "No changes in the repository")
     }
+    log.log("INFO", "Listening for changes in the repository")
 }, frequency)

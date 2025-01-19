@@ -59,10 +59,10 @@ export default async function buildSystem(name:string, flake_dir:string, parentL
         //build the system and push to attic
         await $`
             cd ${flake_dir}
-            nix build --accept-flake-config .#nixosConfigurations.${name}.config.system.build.toplevel --max-jobs ${maxJobs} ${dontFail ? "--keep-going" : ""}
+            nix --extra-experimental-features nix-command --extra-experimental-features flakes build --accept-flake-config .#nixosConfigurations.${name}.config.system.build.toplevel --max-jobs ${maxJobs} ${dontFail ? "--keep-going" : ""}
         `.catch((err)=>{
             parentLogger.log("ERROR", `Failed to build system: ${name}, error: ${err}`)
-            parentLogger.log("DEBUG", `Command used: nix build --accept-flake-config \\.#nixosConfigurations.${name}.config.system.build.toplevel --max-jobs ${maxJobs} ${dontFail ? "--keep-going" : ""}`)
+            parentLogger.log("DEBUG", `Command used: nix --extra-experimental-features nix-command --extra-experimental-features flakes build --accept-flake-config \\.#nixosConfigurations.${name}.config.system.build.toplevel --max-jobs ${maxJobs} ${dontFail ? "--keep-going" : ""}`)
         })
         .finally(()=>{
             parentLogger.log("INFO", `Built System: ${name}`)
@@ -86,8 +86,8 @@ export default async function buildSystem(name:string, flake_dir:string, parentL
                 rm -rf ./result 
                 rm -rf ~/.cache/nix 
                 rm -rf /homeless-shelter
-                nix store gc 
-                nix store optimise
+                nix --extra-experimental-features nix-command --extra-experimental-features flakes store gc 
+                nix --extra-experimental-features nix-command --extra-experimental-features flakes store optimise
             `.catch((err)=>{
                 parentLogger.log("ERROR", `Failed to cleanup: ${err.stderr.toString()}`)
             })

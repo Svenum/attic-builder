@@ -47,10 +47,10 @@ export default async function buildPackage(arch:string, packages:{[key:string]:n
             await $`
                 cd ${flake_dir}
                 pwd
-                nix build --accept-flake-config .#packages.${arch}.${pkg} --max-jobs ${maxJobs} ${process.env.DONT_FAIL && process.env.DONT_FAIL =="true" ? "--keep-going" : ""}
+                nix --extra-experimental-features nix-command --extra-experimental-features flakes build --accept-flake-config .#packages.${arch}.${pkg} --max-jobs ${maxJobs} ${process.env.DONT_FAIL && process.env.DONT_FAIL =="true" ? "--keep-going" : ""}
             `.catch((err)=>{
                 parentLogger.log("ERROR", `Failed to build package: ${nixPKG.name} with error: ${err.stderr.toString()}`)
-                parentLogger.log("DEBUG", `Used Command: nix build --accept-flake-config .\\#packages.${arch}.${pkg} --max-jobs ${maxJobs} ${process.env.DONT_FAIL && process.env.DONT_FAIL =="true" ? "--keep-going" : ""}`)
+                parentLogger.log("DEBUG", `Used Command: nix --extra-experimental-features nix-command --extra-experimental-features flakes build --accept-flake-config .\\#packages.${arch}.${pkg} --max-jobs ${maxJobs} ${process.env.DONT_FAIL && process.env.DONT_FAIL =="true" ? "--keep-going" : ""}`)
             })
             .finally(()=>{
                 parentLogger.log("INFO", `Done with package: ${nixPKG.name}`)
@@ -72,8 +72,8 @@ export default async function buildPackage(arch:string, packages:{[key:string]:n
                     rm -rf ./result 
                     rm -rf ~/.cache/nix 
                     rm -rf /homeless-shelter
-                    nix store gc 
-                    nix store optimise
+                    nix --extra-experimental-features nix-command --extra-experimental-features flakes store gc 
+                    nix --extra-experimental-features nix-command --extra-experimental-features flakes store optimise
                 `.catch((err)=>{
                     parentLogger.log("ERROR", `Failed to cleanup: ${err}`)
                 })

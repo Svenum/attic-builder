@@ -6,25 +6,40 @@ To get up and running with development, you can use the following commands:
 nix-shell . #This will install all the necessary dependencies for you
 bun install #This will install the bun dependencies for you
 bun run build #This will run the script for you which does the building and pushing to attic. BEFORE you run this, fill in your .env file with the envs in the .env.example file
+docker-compose up --build #This will build the docker container and run it for you (you have to provide the docker-compose.yml file)
 ```
-To build the Docker container, run the following command from the root of the project:
+# Environment Variables
 ```bash
-docker build . -t attic-builder
-```
 # Env-Vars
-- `BUILD_SYSTEMS` - Set to `true` to build systems, `false` to not build systems
-- `BUILD_PACKAGES` - Set to `true` to build packages, `false` to not build packages
-- `FLAKE_PATH` - Path to the flake you want to build (if it's not set, the current directory will be used)
-- `NO_KEEP_ATTIC_CONF` - Set to `true` to not keep the attic config (usefull if you've changed something in your conf and the config is still in the cache)
-- `DONT_FAIL` - Set to `true` to not fail the build if a system fails one or two packages (appends the --keep_going flag to nix-build)
-- `MAX_JOBS` - Set to the amount of jobs you want to run in parallel (appends the --max_jobs flag to nix-build)
-- `LITTLE_SPACE` - Set to `true` to not fail the build if there is to little diskspace (appends the --fallback flag to nix-build)
-- `ONLY_BUILD_SYSTEMS` - Set to only build the specified systems (comma separated list of hostnames)
-- `ATTIC_CACHE_URL` - (Required) The URL of the attic instance
-- `ATTIC_CACHE_NAME` - (Required) The name of the cache in attic
-- `ATTIC_CACHE_TOKEN` - (Required) The token to authenticate with the attic instance
-- `LOG_LEVEL`- Set the log level (default: INFO, possible values: DEBUG, INFO, WARNING, ERROR)
-- `JSON_LOGGING` - Set to `true` to log in JSON format (default false)
+```dotenv
+#Docker variables
+GIT_INIT: "false" #Set to true if you want the fetcher to clone the nixconfig repo
+GITHUB_REPO: "" #The git repo to clone (NOT the link just the name of the repo)
+GITHUB_BRANCH: "" #The branch to clone
+GITHUB_USER: "" #The username of your GIT_TOKEN
+GITHUB_TOKEN: "" #The token of your GIT_USER
+BUILD_ON_STARTUP: "false" #If set to true, the script will run the build on startup of the container
+FREQUENCY: "60000" #The frequency in which the script will check for new commits in the repo (in ms) (defaults to 60000)
+MINIMUM_INTERVAL_BETWEEN_BUILDS: "2d" #The minimum interval between two builds (defaults to 2d) (can be in ms, s, m, h, d)
+
+#General variables
+FLAKE_PATH: "" #The path to your git repo (defaults to /builder in the container and ./ in the github action)
+BUILD_SYSTEMS: "true" #If set to true, the script will build the systems
+BUILD_PACKAGES: "true" #If set to true, the script will build the packages
+INSTALL_DEPS: "true" #If set to true, the script will install the dependencies
+NO_KEEP_ATTIC_CONF: "true" #If set to true, the script will not keep the attic.conf file and remove it before re-configuring
+LITTLE_SPACE: "true" #Recommended to set this to true in the Docker, cleans up the nix store after each build
+ONLY_BUILD_SYSTEMS: "comma,seperated,list,of,hosts" #Only build the systems in this list, if you do not provide this, all will be built
+ATTIC_CACHE_NAME: "" #REQUIRED: The name of the attic cache
+ATTIC_CACHE_URL: "http://attic:8080" #REQUIRED: The url of the attic cache (in a docker-compose setup it's recommended to use the service name, to avoid bandwidth hits)
+ATTIC_CACHE_TOKEN: "" #REQUIRED: The token to use for the attic cache
+MAX_JOBS: 2 #The maximum number of jobs to run at once
+DONT_FAIL: "true" #If set to true, the script will append the --keep-going to nix build
+
+LOG_LEVEL: "DEBUG" #The log level of the script (can be DEBUG, INFO, WARNING, ERROR)
+JSON_LOGGING: "false" #If set to true, the script will log in json format
+```
+
 # Usage
 Create `.github/workflows/build.yml` in your repo with the following contents:
 
@@ -51,8 +66,61 @@ jobs:
           dont_fail: false #Optional, set to true to not fail the build if a system fails one or two packages (appends the --keep_going flag to nix-build)
           max_jobs: 2 #Optional, set to the amount of jobs you want to run in parallel (appends the --max_jobs flag to nix-build)
           only_build_systems: <hostname1>,<hostname2> #Optional, set to only build the specified systems
-          
 ```
+# Docker
+If you want to run this project in a docker container that periodically fetches a git repo and builds it, you can use the docker-compose file:
+```yaml
+services:
+  attic:
+    image: ghcr.io/zhaofengli/attic:latest
+    volumes:
+      - ./attic/server.toml:/attic/server.toml
+      - ./attic/server.db:/attic/server.db
+      - ./attic-storage:/attic/storage
+    command: [ "-f", "/attic/server.toml" ]
+    ports:
+      - 8080:8080
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: attic
+      POSTGRES_USER: attic
+      POSTGRES_PASSWORD: attic
+    volumes:
+      - ~/attic/attic/postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+  fetcher:
+    build: .
+    volumes:
+      - ./nixconfig:/nixconfig #You can provide your own nixconfig either as a volume, or you can skip this and set the GIT_INIT var to true so that the fetcher will clone the nixconfig repo
+    environment:
+      GIT_INIT: "true" #Set to true if you want the fetcher to clone the nixconfig repo
+      GITHUB_REPO: "" #The git repo to clone (NOT the link just the name of the repo)
+      GITHUB_BRANCH: "" #The branch to clone
+      GITHUB_USER: "" #The username of your GIT_TOKEN
+      GITHUB_TOKEN: "" #The token of your GIT_USER
+      FLAKE_PATH: "" #The path to your git repo (defaults to /builder in the container and ./ in the github action)
+      BUILD_ON_STARTUP: "true" #If set to true, the script will build all systems on startup of the container
+      FREQUENCY: "60000" #The frequency in milliseconds to check for new commits in milliseconds (defaults to 60 Seconds)
+      #You can also provide all the environment variables supported by the Github action
+      #For a more detailed explanation of what these do, please refer to the readme.md
+      BUILD_SYSTEMS: "true"
+      BUILD_PACKAGES: "true"
+      INSTALL_DEPS: "true"
+      NO_KEEP_ATTIC_CONF: "true"
+      LITTLE_SPACE: "true" #Recommended to set this to true in the Docker
+      ONLY_BUILD_SYSTEMS: "" #Only build the systems in this list, if you do not provide this, all will be built
+      ATTIC_CACHE_NAME: "" #REQUIRED: The name of the attic cache
+      ATTIC_CACHE_URL: "http://attic:8080" #REQUIRED: The url of the attic cache (in a docker-compose setup it's recommended to use the service name, to avoid bandwidth hits)
+      ATTIC_CACHE_TOKEN: "" #REQUIRED: The token to use for the attic cache
+      MAX_JOBS: 2 #The maximum number of jobs to run at once
+      DONT_FAIL: "true" #If set to true, the script will append the --keep-going to nix build
+      LOG_LEVEL: "DEBUG" #The log level of the script (can be DEBUG, INFO, WARNING, ERROR)
+      JSON_LOGGING: "false" #If set to true, the script will log in json format
+```
+
+
 
 # Setup attic
 Setting up Attic is described here: //docs.attic.rs/tutorial.html
