@@ -125,6 +125,10 @@ const headers = await octokit.request('HEAD /')
         log.log("DEBUG", `Error was: ${err}`)
         process.exit(1)
     })
+if(!headers['x-oauth-scopes']){
+    log.log("ERROR", `The token does not have the required permissions to access the repository, please re-run with a token with the repo scope`);
+    process.exit(1)
+}
 const scopes = headers['x-oauth-scopes'].split(", ");
 if(!scopes.includes("repo")){
     log.log("ERROR", `The token does not have the required permissions to access the repository, please re-run with a token with the repo scope`);
