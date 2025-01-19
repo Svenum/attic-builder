@@ -1,0 +1,25 @@
+services:
+  attic:
+    image: ghcr.io/zhaofengli/attic:latest
+    volumes:
+      - ~/attic/attic/server.toml:/attic/server.toml
+      - ~/attic/attic/server.db:/attic/server.db
+      - ~/attic/attic-storage:/attic/storage
+    command: [ "-f", "/attic/server.toml" ]
+    ports:
+      - 8080:8080
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: attic
+      POSTGRES_USER: attic
+      POSTGRES_PASSWORD: attic
+    volumes:
+      - ~/attic/attic/postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+  fetcher:
+    build: .
+    volumes:
+      - ./nixconfig:/nixconfig
+    env_file: .env

@@ -70,7 +70,6 @@ await $`
     log.log("ERROR", `GIT_PATH does not exist, please check the path: ${gitPath}`);
     process.exit(1)
 })
-
 //check if the git path exists and is a git repository
 await $`
     cd ${gitPath}
@@ -96,7 +95,7 @@ await $`
 })
 
 //Fetch the current commit hash
-let currentCommit = await $`
+let currentCommit:any = await $`
     cd ${gitPath}
     git rev-parse HEAD
 `.quiet().catch((err)=>{
