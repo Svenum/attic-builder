@@ -22,7 +22,7 @@ dotenv.config();
 const log = new Logger();
 
 //Set the log level (Defaults to INFO)
-log.setLogLevel(process.env.LOG_LEVEL ? Bun.env.LOG_LEVEL : "INFO")
+log.setLogLevel(process.env.LOG_LEVEL ? process.env.LOG_LEVEL : "INFO")
 log.setJsonLogging(process.env.JSON_LOGGING == "true")
 
 //Verify that the required environment variables are set
@@ -44,7 +44,7 @@ if(!process.env.GITHUB_USER){
 const repo = process.env.GITHUB_REPO;
 const branch = process.env.GITHUB_BRANCH ? process.env.GITHUB_BRANCH : "main";
 const user = process.env.GITHUB_USER;
-const gitPath = process.env.FLAKE_PATH ? process.env.FLAKE_PATH : "/builder/nixos-config";
+const gitPath = process.env.FLAKE_PATH ? process.env.FLAKE_PATH : "/nixconfig";
 const token = process.env.GITHUB_TOKEN;
 const minimumIntervalBetweenBuilds = process.env.MINIMUM_INTERVAL_BETWEEN_BUILDS ? process.env.MINIMUM_INTERVAL_BETWEEN_BUILDS : "2d";
 

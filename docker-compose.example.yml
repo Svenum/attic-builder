@@ -28,9 +28,10 @@ services:
       GITHUB_BRANCH: "" #The branch to clone
       GITHUB_USER: "" #The username of your GIT_TOKEN
       GITHUB_TOKEN: "" #The token of your GIT_USER
-      FLAKE_PATH: "" #The path to your git repo (defaults to /builder in the container and ./ in the github action)
+      FLAKE_PATH: "" #The path to your git repo (defaults to /nixconfig in the container and ./ in the github action)
       BUILD_ON_STARTUP: "true" #If set to true, the script will build all systems on startup of the container
       FREQUENCY: "60000" #The frequency in milliseconds to check for new commits in milliseconds (defaults to 60 Seconds)
+      MINIMUM_INTERVAL_BETWEEN_BUILDS: "2d" #The minimum interval between builds in milliseconds (defaults to 60 Seconds)
       #You can also provide all the environment variables supported by the Github action
       #For a more detailed explanation of what these do, please refer to the readme.md
       BUILD_SYSTEMS: "true"
