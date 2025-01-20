@@ -70,7 +70,7 @@ export default async function buildSystem(name:string, flake_dir:string, parentL
 
         //push to attic
         parentLogger.log("INFO", "Pushing to attic")
-        $`
+        await $`
             cd ${flake_dir}
             attic push ${process.env.ATTIC_CACHE_NAME} ./result
         `.catch((err)=>{
