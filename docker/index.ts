@@ -67,34 +67,23 @@ if(process.env.GIT_INIT == "true"){
 }
 
 //check the minimum interval between builds
-let intervals:Array<{key:string, multiplier:number}> = [
-    {
-        key: "ms",
-        multiplier: 1
-    },
-    {
-        key: "s",
-        multiplier: 1000
-    },
-    {
-        key: "m",
-        multiplier: 60000
-    },
-    {
-        key: "h",
-        multiplier: 3600000
-    },
-    {
-        key: "d",
-        multiplier: 86400000
-    }
-]
-let interval = intervals[minimumIntervalBetweenBuilds.length - 1]
+let intervals:{[key:string]:number} = {
+    ms: 1,
+    s: 1000,
+    m: 60000,
+    h: 3600000,
+    d: 86400000
+}
+
+let interval = intervals[minimumIntervalBetweenBuilds.split(/[0-9]/)[1]]
 if(!interval){
     log.log("ERROR", `Failed to parse the minimum interval between builds, please check the format: ${minimumIntervalBetweenBuilds} (allowed values: ms, s, m, h, d)`);
     process.exit(1)
 }
-let intervalValue = parseInt(minimumIntervalBetweenBuilds.slice(0, -1)) * interval.multiplier
+//get the date value (split at end of numbers)
+let dateKey = minimumIntervalBetweenBuilds.split(/[0-9]/)[1]
+log.log("DEBUG", `Date key is: ${dateKey}, interval is: ${interval}, given number is: ${minimumIntervalBetweenBuilds.replaceAll(dateKey, "")}`)
+let intervalValue = parseInt(minimumIntervalBetweenBuilds.replaceAll(dateKey, "")) * interval
 log.log("DEBUG", `Minimum interval between builds is: ${intervalValue} milliseconds`)
 
 //check if the git path exists
@@ -178,7 +167,7 @@ if(process.env.BUILD_ON_STARTUP && process.env.BUILD_ON_STARTUP == "true"){
     log.log("WARN", "Will build the configuration on the first loop (so after the frequency you've set)")
 }
 //Main Loop
-setInterval(async ()=>{
+while(true){
     log.log("INFO", "Checking for changes in the repository")
     log.log("DEBUG", `Checking for changes in the repository: ${repo} on branch: ${branch} for user: ${user}`)
     //Fetch the latest commit hash
@@ -192,18 +181,19 @@ setInterval(async ()=>{
         log.log("ERROR", `Failed to fetch the latest commit hash, please check the repository: ${repo} and your credentials`);
         log.log("DEBUG", `Error was: ${err}`)
     })
-    .then((res)=>{
-        return res.data
-    })
+        .then((res)=>{
+            return res.data
+        })
     if(!commits){
         log.log("ERROR", `Failed to fetch the latest commit hash, please check the repository: ${repo} and your credentials`);
-        return
+        continue
     }
     let latestCommit = commits.sha;
     log.log("DEBUG", `Latest commit hash is: ${latestCommit}`)
     log.log("DEBUG", `Latest commit message I stored: ${currentCommit}`)
     //Check if the latest commit is different from the current commit
     if(!currentCommit.includes(latestCommit) || (currentRun == 0 && process.env.BUILD_ON_STARTUP && process.env.BUILD_ON_STARTUP == "true") || (Date.now() > nextBuild)){
+        log.log("DEBUG", `Triggered by: ${!currentCommit.includes(latestCommit)} ${currentRun == 0 && process.env.BUILD_ON_STARTUP && process.env.BUILD_ON_STARTUP == "true"} ${Date.now() > nextBuild}`)
         currentRun = 1;
         nextBuild = Date.now() + intervalValue;
         log.log("INFO", "New changes in Upstream, pulling and rebuilding the config")
@@ -233,4 +223,7 @@ setInterval(async ()=>{
         log.log("DEBUG", "No changes in the repository")
     }
     log.log("INFO", "Listening for changes in the repository")
-}, frequency)
+    //wait for the frequency to check for changes
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    await sleep(parseInt(frequency));
+}
