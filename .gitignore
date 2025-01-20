@@ -182,3 +182,5 @@ dist
 
 holynix
 docker-compose.example.yml
+attic
+attic-storage
