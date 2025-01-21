@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-nix --extra-experimental-features repl-flake repl ".#nixosConfigurations.\"$1\".pkgs" <<< ":p system"  2> /dev/null
+nix --extra-experimental-features repl-flake --extra-experimental-features nix-command --extra-experimental-features flakes repl ".#nixosConfigurations.\"$1\".pkgs" <<< ":p system"  2> /dev/null

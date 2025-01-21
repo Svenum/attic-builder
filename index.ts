@@ -50,13 +50,13 @@ log.log("INFO", "Fetching Systems")
 
 const {systems} = await $`
     cd ${flake_path} 
-    nix flake show --json
+    nix --extra-experimental-features nix-command --extra-experimental-features flakes flake show --json
     `.json().then((systems:nixOSFlake):{systems:object}=>{
         log.log("DEBUG", `Fetched Systems: ${JSON.stringify(systems.nixosConfigurations)}`)
         return {systems: systems.nixosConfigurations}
     })
     .catch((err):any=>{
-        log.log("ERROR", `Error whilst fetching system configurations: ${err}`)
+        log.log("ERROR", `Error whilst fetching system configurations: ${err.stderr.toString()}, ${err.stdout.toString()}`)
         if(process.env.BUILD_SYSTEMS && process.env.BUILD_SYSTEMS == "false"){
             log.log("WARN", "Ignored previous error due to user not requesting to build systems (set $BUILD_PACKAGES to true if you wish to build systems)")
         }
@@ -97,11 +97,13 @@ if(process.env.BUILD_SYSTEMS && process.env.BUILD_SYSTEMS == 'true' && systems){
 
 //fetch the packages
 log.log("INFO", "Fetching Packages")
-const packages:{[key:string]:{[key:string]:nixOSPackage}} = await $`
+const packages:{ [p: string]: { [p: string]: nixOSPackage } } | void = await $`
     cd ${flake_path}
-    nix flake show --json 2> /dev/null | jq -r '.packages'
+    nix --extra-experimental-features nix-command --extra-experimental-features flakes flake show --json 2> /dev/null | jq -r '.packages'
 `.json().then((packages:{[key:string]:{[key:string]:nixOSPackage}})=>{
     return packages
+}).catch((err)=>{
+    log.log("ERROR", `Failed to fetch packages: ${err.stderr.toString()}`)
 })
 
 //if the BUILD_PACKAGES var is set to true, then we need to build each package

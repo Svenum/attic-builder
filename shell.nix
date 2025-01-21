@@ -1,5 +1,8 @@
-{ pkgs ? import <nixpkgs> {} }:
-  pkgs.mkShell {
-    # nativeBuildInputs is usually what you want -- tools you need to run
-    nativeBuildInputs = with pkgs.buildPackages; [ bun attic-client attic-server jq ];
+let
+    pkgs = import <nixpkgs> {};
+    unstable = import <nixpkgs> { config = { allowUnfree = true; }; };
+in
+    pkgs.mkShell rec {
+        experimental-features = [ "nix-command" "flakes" ];
+        nativeBuildInputs = with pkgs.buildPackages; [ bun attic-client attic-server jq git ];
 }

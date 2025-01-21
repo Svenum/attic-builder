@@ -16,4 +16,4 @@ COPY ./docker/run.sh /builder
 COPY . /builder
 # Install bun
 RUN nix-shell -p bun --run "bun install"
-ENTRYPOINT ["bash", "./run.sh"]
+ENTRYPOINT ["nix-shell", "--run", "bun run debug-docker"]
