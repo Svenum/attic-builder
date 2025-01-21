@@ -91,15 +91,15 @@ services:
     ports:
       - 5432:5432
   fetcher:
-    build: .
+    image: holynix/attic-builder:latest
     volumes:
       - ./nixconfig:/nixconfig #You can provide your own nixconfig either as a volume, or you can skip this and set the GIT_INIT var to true so that the fetcher will clone the nixconfig repo
     environment:
       GIT_INIT: "true" #Set to true if you want the fetcher to clone the nixconfig repo
       GITHUB_REPO: "" #The git repo to clone (NOT the link just the name of the repo)
       GITHUB_BRANCH: "" #The branch to clone
-      GITHUB_USER: "" #The username of your GIT_TOKEN
-      GITHUB_TOKEN: "" #The token of your GIT_USER
+      GITHUB_USER: "" #The username of your GITHUB_TOKEN
+      GITHUB_TOKEN: "" #The token of your GITHUB_USER
       FLAKE_PATH: "" #The path to your git repo (defaults to /builder in the container and ./ in the github action)
       BUILD_ON_STARTUP: "true" #If set to true, the script will build all systems on startup of the container
       FREQUENCY: "60000" #The frequency in milliseconds to check for new commits in milliseconds (defaults to 60 Seconds)
@@ -109,14 +109,14 @@ services:
       BUILD_PACKAGES: "true"
       INSTALL_DEPS: "true"
       NO_KEEP_ATTIC_CONF: "true"
-      LITTLE_SPACE: "true" #Recommended to set this to true in the Docker
+      LITTLE_SPACE: "true" #Recommended to set this to true in the Docker, will delete everything after a build to use as less disk space as possible.
       ONLY_BUILD_SYSTEMS: "" #Only build the systems in this list, if you do not provide this, all will be built
       ATTIC_CACHE_NAME: "" #REQUIRED: The name of the attic cache
       ATTIC_CACHE_URL: "http://attic:8080" #REQUIRED: The url of the attic cache (in a docker-compose setup it's recommended to use the service name, to avoid bandwidth hits)
       ATTIC_CACHE_TOKEN: "" #REQUIRED: The token to use for the attic cache
       MAX_JOBS: 2 #The maximum number of jobs to run at once
       DONT_FAIL: "true" #If set to true, the script will append the --keep-going to nix build
-      LOG_LEVEL: "DEBUG" #The log level of the script (can be DEBUG, INFO, WARNING, ERROR)
+      LOG_LEVEL: "INFO" #The log level of the script (can be DEBUG, INFO, WARNING, ERROR)
       JSON_LOGGING: "false" #If set to true, the script will log in json format
 ```
 
