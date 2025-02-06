@@ -20,7 +20,7 @@ export default async function buildPackage(arch:string, packages:{[key:string]:n
             parentLogger.log("INFO", `Building ARM System Packages`)
         }
         else if(arch.includes("aarch64-linux") && os.arch() == "x64" && os.platform() == "linux"){
-            parentLogger.log("INFO", `Building ARM System Packages (cross-comopiling)`)
+            parentLogger.log("INFO", `Building ARM System Packages (cross-compiling)`)
         }
         else{
             parentLogger.log("ERROR", `System Arch: ${arch} does not match the current system arch: ${os.arch()} ${os.platform()}. Building this system is currently not implemented`)

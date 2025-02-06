@@ -33,7 +33,7 @@ export default async function buildSystem(name:string, flake_dir:string, parentL
             parentLogger.log("INFO", `Building ARM System: ${name}`)
         }
         else if(system.includes("aarch64-linux") && os.arch() == "x64" && os.platform() == "linux"){
-            parentLogger.log("INFO", `Building ARM System (cross-comopiling): ${name}`)
+            parentLogger.log("INFO", `Building ARM System (cross-compiling): ${name}`)
         }
         else{
             parentLogger.log("ERROR", `System Arch: ${system} does not match the current system arch: ${os.arch()} ${os.platform()}. Building this system is currently not implemented`)
