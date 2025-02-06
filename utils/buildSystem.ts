@@ -26,12 +26,14 @@ export default async function buildSystem(name:string, flake_dir:string, parentL
         parentLogger.log("DEBUG", `Nixos System Arch: ${system}`)
         parentLogger.log("DEBUG", `Running on: ${os.arch()} ${os.platform()}`)
 
-        //TODO: Implement QEMU Option for cross compiling
         if(system.includes("x86_64-linux") && os.arch() == "x64" && os.platform() == "linux"){
             parentLogger.log("INFO", `Building x86 System: ${name}`)
         }
         else if(system.includes("aarch64-linux") && os.arch() == "arm64" && os.platform() == "linux"){
             parentLogger.log("INFO", `Building ARM System: ${name}`)
+        }
+        else if(system.includes("aarch64-linux") && os.arch() == "x64" && os.platform() == "linux"){
+            parentLogger.log("INFO", `Building ARM System (cross-compiling): ${name}`)
         }
         else{
             parentLogger.log("ERROR", `System Arch: ${system} does not match the current system arch: ${os.arch()} ${os.platform()}. Building this system is currently not implemented`)
