@@ -118,6 +118,7 @@ services:
       DONT_FAIL: "true" #If set to true, the script will append the --keep-going to nix build
       LOG_LEVEL: "INFO" #The log level of the script (can be DEBUG, INFO, WARNING, ERROR)
       JSON_LOGGING: "false" #If set to true, the script will log in json format
+    privileged: true #Is needed for cross compiling!
 ```
 
 
