@@ -137,7 +137,13 @@ atticadm -f /path/to/server.toml --sub 'github' --push 'CACHENAME' --validity '1
         - [Self-Hosted Docker Runner](https://github.com/myoung34/docker-github-actions-runner)
         - [Self-Hosted GitHub Runner Docs](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners)
 
+# Testing
+Docker/Podman is needed to run on the system:
+```bash
+nix-shell dev_shell.nix
+cd test
+compose up --build
+```
+
 # Future Ideas
-- Creating a Docker Container that automatically fetches one or more Repos and builds it localy periodically
 - optionally updating flake with `nix flake update` before run.
-- Rewrite in pyhton

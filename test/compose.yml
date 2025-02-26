@@ -1,0 +1,36 @@
+services:
+  attic:
+    image: ghcr.io/zhaofengli/attic:latest
+    volumes:
+      - ./attic/server.toml:/attic/server.toml
+      - ./attic/server.db:/attic/server.db
+      - ./attic/storage:/attic/storage
+    ports:
+      - 8080:8080
+    command: "-f /attic/server.toml"
+
+  attic-builder:
+    build: ../
+    volumes:
+      - ./:/nixconfig #You can provide your own nixconfig either as a volume, or you can skip this and set the GIT_INIT var to true so that the fetcher will clone the nixconfig repo
+    environment:
+      GIT_INIT: "false" #Set to true if you want the fetcher to clone the nixconfig repo
+      LOCAL_FLAKE: "true"
+      BUILD_ON_STARTUP: "true" #If set to true, the script will build all systems on startup of the container
+      FREQUENCY: "60000" #The frequency in milliseconds to check for new commits in milliseconds (defaults to 60 Seconds)
+      MINIMUM_INTERVAL_BETWEEN_BUILDS: "2d" #The minimum interval between builds in milliseconds (defaults to 60 Seconds)
+      #You can also provide all the environment variables supported by the Github action
+      #For a more detailed explanation of what these do, please refer to the readme.md
+      BUILD_SYSTEMS: "true"
+      BUILD_PACKAGES: "true"
+      INSTALL_DEPS: "true"
+      NO_KEEP_ATTIC_CONF: "true"
+      LITTLE_SPACE: "false" #Recommended to set this to true in the Docker
+      ATTIC_CACHE_NAME: "test" #REQUIRED: The name of the attic cache
+      ATTIC_CACHE_URL: "http://attic:8080" #REQUIRED: The url of the attic cache (in a docker-compose setup it's recommended to use the service name, to avoid bandwidth hits)
+      ATTIC_CACHE_TOKEN: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE4MDM2NzA0MzMsIm5iZiI6MTc0MDU5ODQzMywic3ViIjoicm9vdCIsImh0dHBzOi8vand0LmF0dGljLnJzL3YxIjp7ImNhY2hlcyI6eyIqIjp7InIiOjEsInciOjEsImQiOjEsImNjIjoxLCJjciI6MSwiY3EiOjEsImNkIjoxfX19fQ.J1Y5iffi4LNp2VMe_AEg1CliZN-DDDzDvWQVEjpHIWAuIZ4NWc4aF39Hb698FhvUkqHKQCLJZ2YrfokDifcmy2Fc7TkYJBIAa_bbEedTLldFX1don0Y_JIqql1cTEOHRJwL11owQOd0o97Oq9JMX_g4uWPUBl_VdOM0pF76JzEKdhjjm88-avLXTWJZAWhSKYiSWu3C7B0iYZRJccqm243NB7NthWOjpgdtufeIf0Xbyk9FJ3tFuEAa9mwDIFowdJ4dLAz8l7Yacv8DBHq673kJGZQfdlJdY1G5Io6QDoSRp9eFHOZawrobh2jn2RU7w12VF08832oA411bE3VTq_Qq9nYPl4QYQ3mm8PZSGVFHsHoqrY6JbO4LM-2SYVEQNe3rbPjuCGY3N9NrdPBlzVxeB29srXC833xvqrAipl0IPn54xA2wAI2f9WDQzIQw4rxCgIjhoqf0X6CDGdXlqjWUL21AMzTWhP2YtvJuN-dIQJqZuePsnAm3uN8YlRXWCN0ZtXZ5kW2BYqGBz9jHVIuNfODvbaA11r4wO5WiIPCkiHalCsP8EnGlKrMiUElEkfY8-M4R99ZOMWdQZv3mioWhocv52Hgug5cidc8Nvssq49cUvowsM0drqRDf3TZ-yaeprdU9pqOPOrilweFdGwa_SU8o42imXw_kwsLBUH_I" #REQUIRED: The token to use for the attic cache
+      MAX_JOBS: 2 #The maximum number of jobs to run at once
+      DONT_FAIL: "false" #If set to true, the script will append the --keep-going to nix build
+      LOG_LEVEL: "DEBUG" #The log level of the script (can be DEBUG, INFO, WARNING, ERROR)
+      JSON_LOGGING: "false" #If set to true, the script will log in json format
+    privileged: true

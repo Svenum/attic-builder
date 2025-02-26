@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN <<EOF
   apt-get update -y && apt-get upgrade -y
   apt-get install --no-install-recommends curl wget xz-utils htop ca-certificates -y
-  apt-get install --no-install-recommends qemu-user-static update-binfmts -y
+  apt-get install --no-install-recommends qemu-user-static binfmt-support -y
   curl -L https://nixos.org/nix/install | sh -s -- --daemon --yes
   apt-get auto-clean
 EOF

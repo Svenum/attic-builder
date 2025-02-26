@@ -184,3 +184,5 @@ holynix
 docker-compose.example.yml
 attic
 attic-storage
+
+!/test/attic
