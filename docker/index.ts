@@ -188,7 +188,9 @@ while(true){
         log.log("DEBUG", `Error was: ${err}`)
     })
         .then((res)=>{
+          if(res.data){
             return res.data
+          }
         })
     if(!commits){
         log.log("ERROR", `Failed to fetch the latest commit hash, please check the repository: ${repo} and your credentials`);
@@ -206,22 +208,26 @@ while(true){
         //set the current commit to the latest commit
         currentCommit = latestCommit;
         //Pull the changes and rebuild the configuration
-        await $`
+        const pull = await $`
             cd ${gitPath}
             git pull
         `.quiet().catch((err)=>{
             log.log("ERROR", `Failed to pull the changes, please check the logs or re-run with DEBUG enabled`);
             log.log("DEBUG", `Error was: ${err}`)
-            process.exit(1)
         })
+        if(!pull){
+          continue
+        }
         //Rebuild the configuration
-        await $`
+        const rebuild = await $`
             FLAKE_PATH=${gitPath} bun run build
         `.catch((err)=>{
             log.log("ERROR", `Failed to rebuild the configuration, please check the logs for more information`);
             log.log("DEBUG", `Error was: ${err}`)
-            process.exit(1)
         })
+        if (!rebuild){
+          continue
+        }
         log.log("INFO", "Configuration rebuilt and pushed to attic. Please bear in mind that there could've been still some errors. To be sure please check the logs")
 
     }
