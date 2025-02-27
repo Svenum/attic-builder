@@ -19,11 +19,12 @@ services:
     ports:
       - 5432:5432
   fetcher:
-    build: .
+    image: holynix/attic-builder:latest
     volumes:
       - ./nixconfig:/nixconfig #You can provide your own nixconfig either as a volume, or you can skip this and set the GIT_INIT var to true so that the fetcher will clone the nixconfig repo
     environment:
       GIT_INIT: "true" #Set to true if you want the fetcher to clone the nixconfig repo
+      LOCAL_FLAKE: "false" #Set to true if you don't want to fetch a repo
       GITHUB_REPO: "" #The git repo to clone (NOT the link just the name of the repo)
       GITHUB_BRANCH: "" #The branch to clone
       GITHUB_USER: "" #The username of your GIT_TOKEN
@@ -47,3 +48,4 @@ services:
       DONT_FAIL: "true" #If set to true, the script will append the --keep-going to nix build
       LOG_LEVEL: "DEBUG" #The log level of the script (can be DEBUG, INFO, WARNING, ERROR)
       JSON_LOGGING: "false" #If set to true, the script will log in json format
+    privileged: true # needed to enable crosscompiling and sandboxing

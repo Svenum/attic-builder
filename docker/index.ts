@@ -25,27 +25,31 @@ const log = new Logger();
 log.setLogLevel(process.env.LOG_LEVEL ? process.env.LOG_LEVEL : "INFO")
 log.setJsonLogging(process.env.JSON_LOGGING == "true")
 
-//Verify that the required environment variables are set
-if (!process.env.GITHUB_TOKEN){
-    log.log("ERROR", "GITHUB_TOKEN is not set, this is required to authenticate with the Github API.");
-    process.exit(1)
-}
+const isLocalFlake:boolean = process.env.LOCAL_FLAKE ? process.env.LOCAL_FLAKE == "true" : false
 
-if(!process.env.GITHUB_REPO){
-    log.log("ERROR", "GITHUB_REPO is not set, this is required to check the repository for changes.");
-    process.exit(1)
-}
-if(!process.env.GITHUB_USER){
-    log.log("ERROR", "GITHUB_USER is not set, this is required to check the repository for changes.");
-    process.exit(1)
+//Verify that the required environment variables are set
+if (!isLocalFlake){
+  if (!process.env.GITHUB_TOKEN){
+      log.log("ERROR", "GITHUB_TOKEN is not set, this is required to authenticate with the Github API.");
+      process.exit(1)
+  }
+
+  if(!process.env.GITHUB_REPO){
+      log.log("ERROR", "GITHUB_REPO is not set, this is required to check the repository for changes.");
+      process.exit(1)
+  }
+  if(!process.env.GITHUB_USER){
+      log.log("ERROR", "GITHUB_USER is not set, this is required to check the repository for changes.");
+      process.exit(1)
+  }
 }
 
 //Set the required environment variables
-const repo = process.env.GITHUB_REPO;
+const repo = process.env.GITHUB_REPO ? process.env.GITHUB_REPO : "";
 const branch = process.env.GITHUB_BRANCH ? process.env.GITHUB_BRANCH : "main";
-const user = process.env.GITHUB_USER;
+const user = process.env.GITHUB_USER ? process.env.GITHUB_USER : "";
 const gitPath = process.env.FLAKE_PATH ? process.env.FLAKE_PATH : "/nixconfig";
-const token = process.env.GITHUB_TOKEN;
+const token = process.env.GITHUB_TOKEN ? process.env.GITHUB_TOKEN : "";
 const minimumIntervalBetweenBuilds = process.env.MINIMUM_INTERVAL_BETWEEN_BUILDS ? process.env.MINIMUM_INTERVAL_BETWEEN_BUILDS : "2d";
 
 //if the GIT_INIT is set to true and GIT_PATH is set, we will pull the repository
@@ -93,83 +97,89 @@ await $`
     log.log("ERROR", `GIT_PATH does not exist, please check the path: ${gitPath}`);
     process.exit(1)
 })
+
 //check if the git path exists and is a git repository
-await $`
-    cd ${gitPath}
-    git rev-parse --is-inside-work-tree
-`.quiet().catch((err)=>{
-    log.log("ERROR", `GIT_PATH is not a git repository, please check the path: ${gitPath}. If you want me to clone the repository, please set the GIT_PATH to your desired path and the GIT_INIT to true`);
-    log.log("DEBUG", `Error was: ${err.stderr.toString()}, ${err.stdout.toString()}, path is: ${path.join(__dirname, gitPath)}`)
-    process.exit(1)
-})
+if (!isLocalFlake){
+  await $`
+      cd ${gitPath}
+      git rev-parse --is-inside-work-tree
+  `.quiet().catch((err)=>{
+      log.log("ERROR", `GIT_PATH is not a git repository, please check the path: ${gitPath}. If you want me to clone the repository, please set the GIT_PATH to your desired path and the GIT_INIT to true`);
+      log.log("DEBUG", `Error was: ${err.stderr.toString()}, ${err.stdout.toString()}, path is: ${path.join(__dirname, gitPath)}`)
+      process.exit(1)
+  })
 
-log.log("INFO", `Checking for changes in the repository: ${repo} on branch: ${branch} for user: ${user}`)
-log.log("DEBUG", `Also updating the repository upload url to avoid authentication issues`)
-//Switch to the correct branch
-await $`
-    cd ${gitPath}
-    git checkout ${branch}
-    #Update the push url to avoid authentication issues
-    git remote set-url --push origin https://${user}:${token}@github.com/${user}/${repo}
-`.quiet().catch((err)=>{
-    log.log("ERROR", `Failed to switch to branch: ${branch}, please check the branch and the repository: ${repo}`);
-    log.log("DEBUG", `Error was: ${err.stderr.toString()}`)
-    process.exit(1)
-})
+  log.log("INFO", `Checking for changes in the repository: ${repo} on branch: ${branch} for user: ${user}`)
+  log.log("DEBUG", `Also updating the repository upload url to avoid authentication issues`)
+  //Switch to the correct branch
+  await $`
+      cd ${gitPath}
+      git checkout ${branch}
+      #Update the push url to avoid authentication issues
+      git remote set-url --push origin https://${user}:${token}@github.com/${user}/${repo}
+  `.quiet().catch((err)=>{
+      log.log("ERROR", `Failed to switch to branch: ${branch}, please check the branch and the repository: ${repo}`);
+      log.log("DEBUG", `Error was: ${err.stderr.toString()}`)
+      process.exit(1)
+  })
 
-//Fetch the current commit hash
-let currentCommit:any = await $`
-    cd ${gitPath}
-    git rev-parse HEAD
-`.quiet().catch((err)=>{
-    log.log("ERROR", `Failed to fetch the current commit hash, please check the repository: ${repo}`);
-    log.log("DEBUG", `Error was: ${err.stderr.toString()}`)
-    process.exit(1)
-})
-currentCommit = currentCommit.stdout.toString().trim()
-log.log("INFO", `Current commit hash is: ${currentCommit}`)
+  //Fetch the current commit hash
+  let currentCommit:any = await $`
+      cd ${gitPath}
+      git rev-parse HEAD
+  `.quiet().catch((err)=>{
+      log.log("ERROR", `Failed to fetch the current commit hash, please check the repository: ${repo}`);
+      log.log("DEBUG", `Error was: ${err.stderr.toString()}`)
+      process.exit(1)
+  })
+  currentCommit = currentCommit.stdout.toString().trim()
+  log.log("INFO", `Current commit hash is: ${currentCommit}`)
 
-//Set the frequency to check for changes (Defaults to 1 Minute)
-let frequency = process.env.FREQUENCY ? process.env.FREQUENCY : 60000;
-log.log("DEBUG", `Checking for changes every ${frequency} milliseconds`)
+  //Set the frequency to check for changes (Defaults to 1 Minute)
+  let frequency = process.env.FREQUENCY ? process.env.FREQUENCY : 60000;
+  log.log("DEBUG", `Checking for changes every ${frequency} milliseconds`)
 
-//Create the Octokit instance
-const octokit = new Octokit({
-    auth: process.env.GITHUB_TOKEN
-});
+  //Create the Octokit instance
+  const octokit = new Octokit({
+      auth: process.env.GITHUB_TOKEN
+  });
 
-const headers = await octokit.request('HEAD /')
-    .then((res)=>{
-        log.log("INFO", `Passed authentication Test with the GitHub API`)
-        return res.headers
-    })
-    .catch((err)=>{
-        log.log("ERROR", `Failed to authenticate with the GitHub API, please check your credentials`);
-        log.log("DEBUG", `Error was: ${err}`)
-        process.exit(1)
-    })
-if(!headers['x-oauth-scopes']){
-    log.log("ERROR", `The token does not have the required permissions to access the repository, please re-run with a token with the repo scope`);
-    process.exit(1)
+  const headers = await octokit.request('HEAD /')
+      .then((res)=>{
+          log.log("INFO", `Passed authentication Test with the GitHub API`)
+          return res.headers
+      })
+      .catch((err)=>{
+          log.log("ERROR", `Failed to authenticate with the GitHub API, please check your credentials`);
+          log.log("DEBUG", `Error was: ${err}`)
+          process.exit(1)
+      })
+  if(!headers['x-oauth-scopes']){
+      log.log("ERROR", `The token does not have the required permissions to access the repository, please re-run with a token with the repo scope`);
+      process.exit(1)
+  }
+  const scopes = headers['x-oauth-scopes'].split(", ");
+  if(!scopes.includes("repo")){
+      log.log("ERROR", `The token does not have the required permissions to access the repository, please re-run with a token with the repo scope`);
+      process.exit(1)
+  }
+
+  //set the timestamp of the next build that needs to be done
+  let nextBuild = Date.now() + intervalValue;
+  log.log("INFO", `Will build the next configuration at minimum: ${new Date(nextBuild).toISOString()}`)
+  log.log("INFO", `Listening for changes in the repository: ${repo} on branch: ${branch} for user: ${user}`)
+  let currentRun = 0;
+  if(process.env.BUILD_ON_STARTUP && process.env.BUILD_ON_STARTUP == "true"){
+      log.log("WARN", "Will build the configuration on the first loop (so after the frequency you've set)")
+  }
 }
-const scopes = headers['x-oauth-scopes'].split(", ");
-if(!scopes.includes("repo")){
-    log.log("ERROR", `The token does not have the required permissions to access the repository, please re-run with a token with the repo scope`);
-    process.exit(1)
-}
 
-//set the timestamp of the next build that needs to be done
-let nextBuild = Date.now() + intervalValue;
-log.log("INFO", `Will build the next configuration at minimum: ${new Date(nextBuild).toISOString()}`)
-log.log("INFO", `Listening for changes in the repository: ${repo} on branch: ${branch} for user: ${user}`)
-let currentRun = 0;
-if(process.env.BUILD_ON_STARTUP && process.env.BUILD_ON_STARTUP == "true"){
-    log.log("WARN", "Will build the configuration on the first loop (so after the frequency you've set)")
-}
 //Main Loop
 while(true){
+  if(!isLocalFlake){
     log.log("INFO", "Checking for changes in the repository")
     log.log("DEBUG", `Checking for changes in the repository: ${repo} on branch: ${branch} for user: ${user}`)
+
     //Fetch the latest commit hash
     const commits = await octokit.request(`GET /repos/${user}/${repo}/commits/${branch}`, {
         owner: user,
@@ -193,14 +203,17 @@ while(true){
     let latestCommit = commits.sha;
     log.log("DEBUG", `Latest commit hash is: ${latestCommit}`)
     log.log("DEBUG", `Latest commit message I stored: ${currentCommit}`)
+
     //Check if the latest commit is different from the current commit
     if(!currentCommit.includes(latestCommit) || (currentRun == 0 && process.env.BUILD_ON_STARTUP && process.env.BUILD_ON_STARTUP == "true") || (Date.now() > nextBuild)){
         log.log("DEBUG", `Triggered by: ${!currentCommit.includes(latestCommit)} ${currentRun == 0 && process.env.BUILD_ON_STARTUP && process.env.BUILD_ON_STARTUP == "true"} ${Date.now() > nextBuild}`)
         currentRun = 1;
         nextBuild = Date.now() + intervalValue;
         log.log("INFO", "New changes in Upstream, pulling and rebuilding the config")
+        
         //set the current commit to the latest commit
         currentCommit = latestCommit;
+
         //Pull the changes and rebuild the configuration
         const pull = await $`
             cd ${gitPath}
@@ -209,9 +222,10 @@ while(true){
             log.log("ERROR", `Failed to pull the changes, please check the logs or re-run with DEBUG enabled`);
             log.log("DEBUG", `Error was: ${err}`)
         })
-        if(!pull){
+      if(!pull){
           continue
         }
+
         //Rebuild the configuration
         const rebuild = await $`
             FLAKE_PATH=${gitPath} bun run build
@@ -229,7 +243,21 @@ while(true){
         log.log("DEBUG", "No changes in the repository")
     }
     log.log("INFO", "Listening for changes in the repository")
+
     //wait for the frequency to check for changes
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
     await sleep(parseInt(frequency));
+  }else{
+    log.log("INFO", "One time local flake build")
+      await $`
+          FLAKE_PATH=${gitPath} bun run build
+      `.catch((err)=>{
+          log.log("ERROR", `Failed to rebuild the configuration, please check the logs for more information`);
+          log.log("DEBUG", `Error was: ${err}`)
+          process.exit(1)
+      })
+      log.log("INFO", "Configuration rebuilt and pushed to attic. Please bear in mind that there could've been still some errors. To be sure please check the logs")
+      log.log("INFO", "Ontime local Flake build finished! Exiting...")
+      process.exit(0)
+  }
 }

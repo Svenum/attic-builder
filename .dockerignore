@@ -1,3 +1,8 @@
-.env
+.env.example
+CHANGELOG.md
+LICENSE
 nixconfig
 docker-compose.yml
+docker-compose.example.yml
+test
+dev_shell.nix

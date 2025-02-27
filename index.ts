@@ -40,6 +40,20 @@ await $`
     log.log("ERROR", `Failed to login to attic: ${err}`)
     process.exit(1)
 })
+
+// check if cache exists and create if not
+await $`
+  attic cache info ${process.env.ATTIC_CACHE_NAME}
+`.catch(async (err)=>{
+  log.log("WARN", `Cache ${process.env.ATTIC_CACHE_NAME} not found`)
+    log.log("INFO", `Creating cache ${process.env.ATTIC_CACHE_NAME}`)
+    await $`
+      attic cache create ${process.env.ATTIC_CACHE_NAME}
+    `.catch((err)=>{
+      log.log("ERROR", `Failed to create cache: ${process.env.ATTIC_CACHE_NAME}`)
+    })
+})
+
 //change directory to the flake dir
 await $`cd ${flake_path}`.catch((err)=>{
     log.log("ERROR", `Cannot cd to flake path: ${flake_path}, this is unexpected. The Program cannot continue. (Error was: ${err})`)

@@ -1,0 +1,163 @@
+# Socket address to listen on
+listen = "[::]:8080"
+
+# Allowed `Host` headers
+#
+# This _must_ be configured for production use. If unconfigured or the
+# list is empty, all `Host` headers are allowed.
+allowed-hosts = []
+
+# The canonical API endpoint of this server
+#
+# This is the endpoint exposed to clients in `cache-config` responses.
+#
+# This _must_ be configured for production use. If not configured, the
+# API endpoint is synthesized from the client's `Host` header which may
+# be insecure.
+#
+# The API endpoint _must_ end with a slash (e.g., `https://domain.tld/attic/`
+# not `https://domain.tld/attic`).
+#api-endpoint = "https://your.domain.tld/"
+
+# Whether to soft-delete caches
+#
+# If this is enabled, caches are soft-deleted instead of actually
+# removed from the database. Note that soft-deleted caches cannot
+# have their names reused as long as the original database records
+# are there.
+#soft-delete-caches = false
+
+# Whether to require fully uploading a NAR if it exists in the global cache.
+#
+# If set to false, simply knowing the NAR hash is enough for
+# an uploader to gain access to an existing NAR in the global
+# cache.
+#require-proof-of-possession = true
+
+# Database connection
+[database]
+# Connection URL
+#
+# For production use it's recommended to use PostgreSQL.
+url = "sqlite:///attic/server.db"
+
+# Whether to enable sending on periodic heartbeat queries
+#
+# If enabled, a heartbeat query will be sent every minute
+#heartbeat = false
+
+# File storage configuration
+[storage]
+# Storage type
+#
+# Can be "local" or "s3".
+type = "local"
+
+# ## Local storage
+
+# The directory to store all files under
+path = "/attic/storage"
+
+# ## S3 Storage (set type to "s3" and uncomment below)
+
+# The AWS region
+#region = "us-east-1"
+
+# The name of the bucket
+#bucket = "some-bucket"
+
+# Custom S3 endpoint
+#
+# Set this if you are using an S3-compatible object storage (e.g., Minio).
+#endpoint = "https://xxx.r2.cloudflarestorage.com"
+
+# Credentials
+#
+# If unset, the credentials are read from the `AWS_ACCESS_KEY_ID` and
+# `AWS_SECRET_ACCESS_KEY` environment variables.
+#[storage.credentials]
+#  access_key_id = ""
+#  secret_access_key = ""
+
+# Data chunking
+#
+# Warning: If you change any of the values here, it will be
+# difficult to reuse existing chunks for newly-uploaded NARs
+# since the cutpoints will be different. As a result, the
+# deduplication ratio will suffer for a while after the change.
+[chunking]
+# The minimum NAR size to trigger chunking
+#
+# If 0, chunking is disabled entirely for newly-uploaded NARs.
+# If 1, all NARs are chunked.
+nar-size-threshold = 65536 # chunk files that are 64 KiB or larger
+
+# The preferred minimum size of a chunk, in bytes
+min-size = 16384            # 16 KiB
+
+# The preferred average size of a chunk, in bytes
+avg-size = 65536            # 64 KiB
+
+# The preferred maximum size of a chunk, in bytes
+max-size = 262144           # 256 KiB
+
+# Compression
+[compression]
+# Compression type
+#
+# Can be "none", "brotli", "zstd", or "xz"
+type = "zstd"
+
+# Compression level
+#level = 8
+
+# Garbage collection
+[garbage-collection]
+# The frequency to run garbage collection at
+#
+# By default it's 12 hours. You can use natural language
+# to specify the interval, like "1 day".
+#
+# If zero, automatic garbage collection is disabled, but
+# it can still be run manually with `atticd --mode garbage-collector-once`.
+interval = "12 hours"
+
+# Default retention period
+#
+# Zero (default) means time-based garbage-collection is
+# disabled by default. You can enable it on a per-cache basis.
+#default-retention-period = "6 months"
+
+[jwt]
+# WARNING: Changing _anything_ in this section will break any existing
+# tokens. If you need to regenerate them, ensure that you use the the
+# correct secret and include the `iss` and `aud` claims.
+
+# JWT `iss` claim
+#
+# Set this to the JWT issuer that you want to validate.
+# If this is set, all received JWTs will validate that the `iss` claim
+# matches this value.
+#token-bound-issuer = "some-issuer"
+
+# JWT `aud` claim
+#
+# Set this to the JWT audience(s) that you want to validate.
+# If this is set, all received JWTs will validate that the `aud` claim
+# contains at least one of these values.
+#token-bound-audiences = ["some-audience1", "some-audience2"]
+
+[jwt.signing]
+# JWT RS256 secret key
+#
+# Set this to the base64-encoded private half of an RSA PEM PKCS1 key.
+# You can also set it via the `ATTIC_SERVER_TOKEN_RS256_SECRET_BASE64`
+# environment variable.
+token-rs256-secret-base64 = "LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlKS0FJQkFBS0NBZ0VBenhxaXI5elhUeTMwVW55Sk1MQzNoTXY5dXdQbDYvZE1UazJPR0FzVXhHUEM5RWtzCmRVR21EWU95eUlUcHc5bGhnMjdsbjM4TGxvaWZib2hrRVVnaFlJTUdzSUxGSW5QZExJVmpwcThIWWFLcVNkbk4KV28reTAzN21FWmRjZUIzVFdCRmhYOVlORXk3YlRoREVYaUJKUlVzOEtvUlB3cWw2MWVWSk5nSU5oM1RwanMvcwpxZldMbTZNMUxBU211Q3huTHVPOFBHK3VuSHp0a0VYbTBNSlEzSlcySTB2MTJ5emxyOE9oMWs5TFlrTitLOXg3Ck1Vd05GN25Ub0VkaERmR2J1OGNaRUwrMjk3OWRGQkY5T0lIS3ZneWk3eENqUHpVT0VOTklOMXBSaHNLZVpHMEcKRFRvMGMxOHlhMXdqVEZtUm9YSWFVMnN5WE5aN01GeFdmRzJtcCtoWDY5dlpDVm5Iak1YUEZEMGZXTzRhaVNJWQpFWnRacDgzWllHbW13cUlIQzdXWW04UXRRenJRK1VEOXI3b3poR0xESVVHRTZTbnhTeGd0Sm5hUjRKUTZ3cFg4CmZjK3VyMUdRKzIyZjgzNUFhZk9MSlpsb3NmekU5M0ZER2hlYThUU0RHRVNUNUZRUkVmV0RubStkSUN2TW1vVmgKdVUvd3NFNmZDeEZDcGw4cmZheGkyVkcxWTJ3aDNDdnlQSUVyZlJqdUVqcFBCS0FCam9mWGpoRDVpbG1sTjR4VgpTbnRiSEtIVkYrRFIvZnpBK2hLMnhYd2tEajZDSUhvWktkRW1sUWpZcnI5Y0czMjdSdFo2MzBuN2p0U0hSL0RQCkpDeGtBdnhZeFc2WW1NU1A2QUM0c3dlZGtoeUVHeDhSY0E4NGlhazVYR1V0Q0I3ZE8wQXluSzdMNGFNQ0F3RUEKQVFLQ0FnQTVsSkU0emZDNjNlNzQ1QkVNallWb2tZS285VXQra0pJUmp6UjdjTkZFVE94T0dPNFlaN2t3TnJhRgpVNWJlMGRodnYyeHVMTmRlOGZ0SnN2Z0hhZ09GbnNoRVdRZFFMZUNIV1VxOGRCdGNST3FOZjlXOVlRaDZEdVVPCmJRUFRqWTlPQS84THN5cU5jOUNiWXNRRjIzb2pudWhLZGVEcklVMjZuSFgvWXhDNTRZSnlKMU1JYWZGM3d5ZXMKWmxxb0NBaGtIQU1nMW5nNG4rODQxb1oyOGgralJLaVFKYlZrUzVaTWlOcTlCK3pRbEMxSEtwVEJ2d0JBNFhSNgpNbjVFYnpFNlF2K3dEVzFrY2pzQnNsOGJUOUs3aGkzaXc4QnZlV1BBdjgxclBsdytXR3ZMUmhpUm91WWtVWXBtCkdRYmpXbC9JQUQ1YmhRbEtrSU5OamM2cDU1Nld2YktGUW5lbmJURW5nK3ZCT0J3K1RCY3l1ZWc5M0x2MGFXWi8KYVFXOUVjN28zWkY4c0tTUkJvb0Nla1NKd3FRQzdDbktENTB1anlGazNReTNLbDJEOGFRZStvcUI0SnluajdDUgpUQU44RE9PbEptZkgwTlVFclhHRXBqcXdJb3A4RnpBb1F5TDNZaWFDemR3WWRHajNndEdtekJBY1JIemlyTjZuCk9vVTdtRXZaV29XWUdqaWlSWG13bzB5WWJwQVRaakM4YzBrYTRzYWhpVEgwYmlXNU1lNWdRMVl1cG5KOTQ4ODcKeDF4K2M0bmVIdVZ0b0dHZmpOa2trREFOSWZIZ2hSMjRnL2tINy9mZUM4d0loSTRYOEtIVzkrUElaZ2NRUDdQSgoxaU9sNHBiSzJZT3ZOZnc0VmFPRnZ0eWVTNUdmTmQrQTNlUDQ2dnJZWlM4UEJ3eldRUUtDQVFFQS9rVmg2VERSCldCL1lJT1ovVEQ0MDdwdkJqaWJXV3pDRkt5ZndtOE11em1xNlBYMGN2WUk0SUZMcEJ2Ymx5MVVzS3dsaTlBYlEKeUh2YXNkS2VFMURaT3VQWnZSL3NsVW1LckZRWFluVU94c3JoYS9JVWcvVW5OZUo4bTUzanpjQXpkL3FiVFlmOQpRSFlZMzljell6NFEydGlOL0ZvcWh1L0l2bHFOZnVWcU1IVmZleXE3dXhXUmlRUXJZUzhtemFUSG1hc2c0b1dYCmw3blY1THp2ZnV4Ump6Wk1GZ2JpeStCc3NUVndIUVF0V0llYU5vbEswM0NaNVBkNGZOaXB1WEh4bkpndisramEKLy9HTExLZFcwaGJ3N21kZHJ3K3Ftd1N6R1pwWkU5YzI1Sk9NZytGcXpXVERlMHVxM0VVeGNYZE81eVk5aVI3cgpZU2diUjdlQ2M4bzZ3d0tDQVFFQTBJTWw0c3ZTZjlkdnlSR1hTZ1M1Qy80V010dnpDUTlzR0xaSlcxNGFrZDlNClFBQjlMd2VGOTRJVTFNR0NYSHpZZlR2TWFzRTFWVEdwelA0bkhzN3Btb0JPTGEvZWh5dGFyUVVENW5WdElscUwKRW15WXBCWWg0NlJIeUFwZGJZU2JoQlB3ZWt1NUpYcGtidkpsT1lIVmdTOEkvQldCSmdaTUh2QVhxcW5xdHZreQpQR3JsaEw0aDIwNE1VMzJjMStUUWhta3c3b0VqUHEvK2NFZDhSaEdPOHRGMk9LTENmbmpKSzBQMVpUQjE4emlpCmRZWE5haDY1bjFFZDUyajVIZkdOS3c3T2RUTWFKbEV6UmZ6a0d6MldOQnFOdmtLVk5OSCsvWjdVK0VLUnRmN2sKNnZEdFB2NGxJc244L2RuSlRHVGVwN3hJYWNOTTJSUm5vMHFBWW02UG9RS0NBUUFTbm9RSDdtSTJBTWJ6eWMwaQppUitaSldDc0J4NEZPVzFXOXFyQXpTOGRRR1Y0NFROOGtRK0pGbWtuOEdadFdFUk90blkvaGt3OWtndzJuMFNpCkIzYVF3R1NPVzhzWU4zVm5IeFZEU1cwV2szNmtSK3JHcXVuL0lTR2N4NWdKMWZ3dTJmUUxYbHptSG4rOXpHVmYKN0FpUjdlK2Z2ZjZGT1FQTEpKaGQ1WEM4TWF3WE9jN2JhVDNwK1pzdmw2TlF4Yk0wQm5yMisyOVpWZXRhdjVjTwpCVUlIcWFNeXJiaG4wM3hDRWJhdStVSlV6RUUzb3lBT2taMURUZmZOdEpQaEYzM295S0FpNHk4K05MTExSMG10ClFxN0wxbGZlM05mU1dDckJRak1wcDhYR1FTTzErSWk0bDV0VTZQcU8vS1lkTis1WU1NMnF2OC9lb25BMDlUUWgKUkhxL0FvSUJBQmpNSUF0UzFodmlFU2RHY2ttWk9qQ1U3U3JyUVlJSVZZQ3kzUktDcElKSW5oYldlQXpKeGtMagpNM3NCOEhEellBTzB3dURIVFlKdVA1VmpmRitMbC9pSjNjSk5NaGU5TGpGNWNUZE5LOGQwSVNuMXhFbHZZR1JrCk95MHRIbU5SNi9UUE1rQTVGVEhCMW9QalMrcUU2RkZPdUxEU0ZlUGh4OWUrRWZKMzlyUC8rdHQ0a3djd1hYSnAKVzhucUhHY0lqVXdPNG9UYTBzZzN3ZmkwWjdFbGtXeUxRSllIdFQyNU82TnJsNW1MSTl2akZsOEhwS0JFT3lzWgpTSWNtMHNtZTJuME9hN3RBY3BHd0Fuc0dVbEp6QnBQM3ZIZXVEM1NTck5LWXV4Y3pRNFR6WldJVGVRT08wZmZMCk1jMDJ3MXZVZXk1VGxBRVArdW11SlkwajVSVFB0VUVDZ2dFQkFLVDZIMXdUMm53M0xzeFJFT0RUV2JxcGtlVVMKS1p5K1IzVzhDR3duRVNja2djYzd0S2l1TGthU3VsY1lLdmJiTExoMXNqVXRqNXJJRFlFeTJROEZoR1ZHbjVoSwprK0VUbmx0UWVJaElINi95VzVqNzQ0eEhjQVZ0MVA2RlhyV08rcC8vQzF1MDNEdklaK3RFMVl6eW5Ya2MzRDVCCkNWdklJVVZRZWIrbFNMaFJPQkFsKzBCWVFYY0orQk1QSVFNZ1ozZzZXWlovbks0QVNkdHBuN2F6S3pPejkvb1cKbkY5Skl1emtiSXlnTFpqWGRkdDg3M1JaMjFJYkZneHIzTjIwVXpqY2p3aURuR0EzSkMrYStONjdhWVNyY0t1Qwo2R0E1SzlpY0piOGs5bHNoK1VJbGY1SjdPUEJyUkRsK2dTWXRIRnRzVjhXeW94WjJ2VlE3TWt1OHBqUT0KLS0tLS1FTkQgUlNBIFBSSVZBVEUgS0VZLS0tLS0K"
+
+# JWT HS256 secret key
+#
+# Set this to the base64-encoded HMAC secret key.
+# You can also set it via the `ATTIC_SERVER_TOKEN_HS256_SECRET_BASE64`
+# environment variable.
+#token-hs256-secret-base64 = ""
