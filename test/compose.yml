@@ -3,11 +3,8 @@ services:
     image: ghcr.io/zhaofengli/attic:latest
     volumes:
       - ./attic/server.toml:/attic/server.toml
-      - ./attic/server.db:/attic/server.db
-      - ./attic/storage:/attic/storage
-    ports:
-      - 8080:8080
-    command: "-f /attic/server.toml"
+      - ./attic/init.sh:/attic/init.sh
+    entrypoint: "/attic/init.sh"
 
   attic-builder:
     build: ../

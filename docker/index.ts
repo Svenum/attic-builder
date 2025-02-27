@@ -25,9 +25,10 @@ const log = new Logger();
 log.setLogLevel(process.env.LOG_LEVEL ? process.env.LOG_LEVEL : "INFO")
 log.setJsonLogging(process.env.JSON_LOGGING == "true")
 
+const isLocalFlake:boolean = process.env.LOCAL_FLAKE ? process.env.LOCAL_FLAKE == "true" : false
+
 //Verify that the required environment variables are set
-log.log("DEBUG", process.env.LOCAL_FLAKE)
-if (process.env.LOCAL_FLAKE != "true"){
+if (!isLocalFlake){
   if (!process.env.GITHUB_TOKEN){
       log.log("ERROR", "GITHUB_TOKEN is not set, this is required to authenticate with the Github API.");
       process.exit(1)
@@ -96,8 +97,9 @@ await $`
     log.log("ERROR", `GIT_PATH does not exist, please check the path: ${gitPath}`);
     process.exit(1)
 })
+
 //check if the git path exists and is a git repository
-if (process.env.LOCAL_FLAKE != "true"){
+if (!isLocalFlake){
   await $`
       cd ${gitPath}
       git rev-parse --is-inside-work-tree
@@ -171,11 +173,13 @@ if (process.env.LOCAL_FLAKE != "true"){
       log.log("WARN", "Will build the configuration on the first loop (so after the frequency you've set)")
   }
 }
+
 //Main Loop
 while(true){
-  if(process.env.LOCAL_FLAKE != "true"){
+  if(!isLocalFlake){
     log.log("INFO", "Checking for changes in the repository")
     log.log("DEBUG", `Checking for changes in the repository: ${repo} on branch: ${branch} for user: ${user}`)
+
     //Fetch the latest commit hash
     const commits = await octokit.request(`GET /repos/${user}/${repo}/commits/${branch}`, {
         owner: user,
@@ -197,14 +201,17 @@ while(true){
     let latestCommit = commits.sha;
     log.log("DEBUG", `Latest commit hash is: ${latestCommit}`)
     log.log("DEBUG", `Latest commit message I stored: ${currentCommit}`)
+
     //Check if the latest commit is different from the current commit
     if(!currentCommit.includes(latestCommit) || (currentRun == 0 && process.env.BUILD_ON_STARTUP && process.env.BUILD_ON_STARTUP == "true") || (Date.now() > nextBuild)){
         log.log("DEBUG", `Triggered by: ${!currentCommit.includes(latestCommit)} ${currentRun == 0 && process.env.BUILD_ON_STARTUP && process.env.BUILD_ON_STARTUP == "true"} ${Date.now() > nextBuild}`)
         currentRun = 1;
         nextBuild = Date.now() + intervalValue;
         log.log("INFO", "New changes in Upstream, pulling and rebuilding the config")
+        
         //set the current commit to the latest commit
         currentCommit = latestCommit;
+
         //Pull the changes and rebuild the configuration
         await $`
             cd ${gitPath}
@@ -214,6 +221,7 @@ while(true){
             log.log("DEBUG", `Error was: ${err}`)
             process.exit(1)
         })
+
         //Rebuild the configuration
         await $`
             FLAKE_PATH=${gitPath} bun run build
@@ -229,6 +237,7 @@ while(true){
         log.log("DEBUG", "No changes in the repository")
     }
     log.log("INFO", "Listening for changes in the repository")
+
     //wait for the frequency to check for changes
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
     await sleep(parseInt(frequency));
@@ -242,7 +251,7 @@ while(true){
           process.exit(1)
       })
       log.log("INFO", "Configuration rebuilt and pushed to attic. Please bear in mind that there could've been still some errors. To be sure please check the logs")
-      log.log("INFO", "Exiting...")
+      log.log("INFO", "Ontime local Flake build finished! Exiting...")
       process.exit(0)
   }
 }
