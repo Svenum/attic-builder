@@ -41,7 +41,7 @@ await $`
     process.exit(1)
 })
 
-// check if cache exists an create if not
+// check if cache exists and create if not
 await $`
   attic cache info ${process.env.ATTIC_CACHE_NAME}
 `.catch(async (err)=>{
