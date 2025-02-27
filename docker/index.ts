@@ -98,6 +98,15 @@ await $`
     process.exit(1)
 })
 
+let octokit:Octokit|undefined;
+let currentRun = 0;
+let currentCommit:String;
+let nextBuild:Date|undefined;
+
+//Set the frequency to check for changes (Defaults to 1 Minute)
+let frequency = process.env.FREQUENCY ? process.env.FREQUENCY : 60000;
+log.log("DEBUG", `Checking for changes every ${frequency} milliseconds`)
+
 //check if the git path exists and is a git repository
 if (!isLocalFlake){
   await $`
@@ -124,7 +133,7 @@ if (!isLocalFlake){
   })
 
   //Fetch the current commit hash
-  let currentCommit:any = await $`
+  currentCommit:any = await $`
       cd ${gitPath}
       git rev-parse HEAD
   `.quiet().catch((err)=>{
@@ -135,12 +144,8 @@ if (!isLocalFlake){
   currentCommit = currentCommit.stdout.toString().trim()
   log.log("INFO", `Current commit hash is: ${currentCommit}`)
 
-  //Set the frequency to check for changes (Defaults to 1 Minute)
-  let frequency = process.env.FREQUENCY ? process.env.FREQUENCY : 60000;
-  log.log("DEBUG", `Checking for changes every ${frequency} milliseconds`)
-
   //Create the Octokit instance
-  const octokit = new Octokit({
+  octokit = new Octokit({
       auth: process.env.GITHUB_TOKEN
   });
 
@@ -165,10 +170,9 @@ if (!isLocalFlake){
   }
 
   //set the timestamp of the next build that needs to be done
-  let nextBuild = Date.now() + intervalValue;
+  nextBuild = Date.now() + intervalValue;
   log.log("INFO", `Will build the next configuration at minimum: ${new Date(nextBuild).toISOString()}`)
   log.log("INFO", `Listening for changes in the repository: ${repo} on branch: ${branch} for user: ${user}`)
-  let currentRun = 0;
   if(process.env.BUILD_ON_STARTUP && process.env.BUILD_ON_STARTUP == "true"){
       log.log("WARN", "Will build the configuration on the first loop (so after the frequency you've set)")
   }
