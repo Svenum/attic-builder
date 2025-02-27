@@ -186,3 +186,4 @@ attic
 attic-storage
 
 !/test/attic
+test/result
