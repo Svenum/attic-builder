@@ -133,7 +133,7 @@ if (!isLocalFlake){
   })
 
   //Fetch the current commit hash
-  currentCommit:any = await $`
+  currentCommit = await $`
       cd ${gitPath}
       git rev-parse HEAD
   `.quiet().catch((err)=>{
